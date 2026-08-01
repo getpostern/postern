@@ -1,0 +1,243 @@
+/* The ledger — entry rows (printed timestamps, hairlines, not cards). Ported from `2QU-0`; the table
+ * itself is the shared <LedgerTable>, so this file owns the masthead spacing, the filter bar, the
+ * decision pills, and the honest pager. Every value via a token (ADR 0031). */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── filter bar (2W4-0) ────────────────────────────────────────────────── */
+/* The pills row plus, when a sector is chosen, the one line saying what a sector filter leaves out.
+ * A wrapper rather than a fourth `.page` child so the caveat sits with the control it explains (8px,
+ * the same tight pairing `.pager` uses for its own small print) instead of at the page's 28px rhythm. */
+.filterBar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.spacer {
+  flex: 1 1 0;
+}
+
+/* A native <select> dressed as the drawn pill — keyboard-operable for free, honest, no custom
+ * listbox to get wrong. The caret is a decorative overlay; the select is transparent above it. */
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  padding: 8px 32px 8px 14px;
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.caret {
+  position: absolute;
+  right: 12px;
+  color: var(--color-faded);
+  font-size: 13px;
+  line-height: 16px;
+  pointer-events: none;
+}
+
+/* ── decision toggle (2WI-0): All · Admitted · Denied (server-backed only) ─
+ * Same clipped-ring mechanism as LedgerTable's `.scroll`: `overflow: clip` clips at the padding
+ * edge, and the global ring reaches exactly 5px past a segment's border box, so every segment's
+ * focus ring was clipped away.
+ *
+ * `overflow-clip-margin` is the exact tool for this — it expands the clip region WITHOUT moving
+ * any content, and it is valid precisely because this box clips with `clip` rather than `auto`.
+ * Plain `padding: 5px` was tried first and rejected at review: the segments are drawn flush to the
+ * border so the radius crops them, and padding floats `.segActive`'s fill 5px inside with square
+ * corners while `.segDivider` stops short top and bottom — re-drawing artboard `2WI-0` to buy a
+ * ring. Do not re-declare an outline here — base.css owns the one ring (#69, ruled 2026-07-25). */
+.toggle {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  overflow: clip;
+  overflow-clip-margin: 5px;
+}
+
+.seg {
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+.segActive {
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+}
+/* The Denied word carries the seal, active or not — the design colours the concept, not the state. */
+.segDeny {
+  color: var(--color-seal);
+}
+.segDivider {
+  align-self: stretch;
+  width: 1px;
+  flex-shrink: 0;
+  background: var(--color-ink-a22);
+}
+
+/* ── table cell primitives (mono identity vs italic sector name) ───────── */
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--color-ink);
+}
+/* The local calendar day, ahead of the clock in the same cell (#100 item 9). Full ink so the DATE
+ * reads as the primary fact and the clock stays quiet beside it. `.monoTime` is unchanged. */
+.monoDate {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-ink);
+  margin-right: 6px;
+}
+.monoTime {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-faded);
+}
+.args {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-faded);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sectorCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sectorName {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 18px;
+}
+.sectorNone {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ── pager (2YK-0), made honest ────────────────────────────────────────── */
+.pager {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  width: 100%;
+}
+.pagerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+}
+.pagerCount {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+/* The right-hand lane of the pager row: Load more (when it can be honoured) and the export. A fixed
+ * lane rather than a bare sibling so the export does not slide across the row when Load more is
+ * absent — the control stays where the eye last found it. */
+.pagerActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+.loadMore {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+.loadMore:disabled {
+  color: var(--color-faded);
+}
+/* The filtered-view export (#78).
+ *
+ * These declarations are `SettingsPage.module.css`'s `.btn` verbatim — the Console's existing button
+ * treatment, on the sibling page in this same directory, already carrying the same verb ("Export
+ * everything"). It is not on the ledger's Paper artboard (`2QU-0` draws no export at all), so the rule
+ * is: reuse a treatment that exists in the repo rather than invent a design value. An underline or a
+ * bare ink word was tried first and rejected — `border-bottom` in this Console is only ever a hairline
+ * RULE, and a plain ink word beside `.loadMore`'s seal reads as a label, not a control.
+ *
+ * It cannot be a second `.loadMore` in seal either: the soul's colour rule is one voice leading per
+ * surface, and two seal actions in one lane compete. Continuing the read keeps the accent; the export
+ * is the bordered pill. */
+.exportBtn {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  background: transparent;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+/* The two honest notices, in one treatment because they are two facts of the same kind, printed one
+ * under the other. `.ceiling` now carries what the gate could not tell us about its own reach (and the
+ * sector filter's exclusion, and the empty state) rather than the retired 1,000-row dead end; the
+ * export's own note says what the FILE will hold. */
+.ceiling,
+.exportNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+  max-width: 720px;
+}
+
+.loadError {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+}

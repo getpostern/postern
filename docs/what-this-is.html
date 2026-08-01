@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postern — What this is</title>
+<style>
+  :root{
+    --ink:#16110d;        /* warm espresso black */
+    --ink-2:#1d1712;
+    --panel:#211a13;
+    --cream:#ece1cf;      /* warm cream text */
+    --cream-soft:#b9ac96;
+    --cream-faint:#7d7159;
+    --ochre:#d9a25b;      /* primary warm accent */
+    --ochre-soft:#e8c587;
+    --terra:#cb7d4f;      /* secondary warm accent */
+    --rule:#352a1f;
+    --rule-soft:#28201880;
+    --display:"Big Caslon","Hoefler Text","Didot","Playfair Display",Georgia,"Times New Roman",serif;
+    --serif:"Iowan Old Style","Charter","Palatino Linotype",Georgia,"Times New Roman",serif;
+    --mono:"SF Mono","Menlo","Monaco","Roboto Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--ink);color:var(--cream);
+    font-family:var(--serif);font-size:18px;line-height:1.66;
+    background-image:radial-gradient(120% 70% at 50% -10%,rgba(217,162,91,.10) 0%,rgba(22,17,13,0) 55%);
+    background-attachment:fixed;
+  }
+  /* film grain */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:2;opacity:.045;mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{max-width:50rem;margin:0 auto;padding:0 1.7rem;position:relative;z-index:1;}
+  .narrow{max-width:39rem;}
+  ::selection{background:var(--ochre);color:var(--ink);}
+
+  header.top{padding:1.6rem 0 0;}
+  .top .wrap{display:flex;justify-content:space-between;align-items:baseline;}
+  .mark{font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cream-soft);}
+  .mark b{color:var(--ochre);font-weight:600;}
+  .top .meta{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cream-faint);}
+
+  .hero{padding:5.5rem 0 3.2rem;}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--ochre);margin-bottom:2.2rem;display:flex;align-items:center;gap:1rem;}
+  .eyebrow::after{content:"";height:1px;flex:1;max-width:7rem;background:linear-gradient(90deg,var(--ochre),transparent);}
+  h1{font-family:var(--display);font-weight:400;font-size:clamp(2.7rem,8vw,5rem);line-height:1.02;letter-spacing:-.01em;margin:0 0 1.8rem;}
+  h1 .yours{font-style:italic;color:var(--ochre);}
+  .lede{font-size:clamp(1.18rem,2.5vw,1.5rem);line-height:1.5;color:var(--cream-soft);max-width:38rem;font-weight:400;}
+  .lede b{color:var(--cream);font-weight:600;}
+
+  section{padding:3.4rem 0;border-top:1px solid var(--rule);}
+  .kicker{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cream-faint);margin-bottom:1.3rem;}
+  h2{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,4.5vw,2.9rem);line-height:1.12;letter-spacing:-.005em;margin:0 0 1.3rem;}
+  h2 em{font-style:italic;color:var(--ochre);}
+  p{margin:0 0 1.2rem;}
+  .big-p{font-size:clamp(1.15rem,2.3vw,1.42rem);line-height:1.5;color:var(--cream);}
+  strong{font-weight:600;color:var(--cream);}
+
+  /* three steps */
+  .steps{margin:2.4rem 0 1rem;border-left:2px solid var(--ochre);padding-left:1.6rem;display:grid;gap:1.9rem;}
+  .step{position:relative;}
+  .step .n{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre);margin-bottom:.45rem;}
+  .step .h{font-family:var(--display);font-size:1.5rem;line-height:1.18;margin:0 0 .35rem;}
+  .step .d{color:var(--cream-soft);font-size:1.02rem;line-height:1.5;max-width:34rem;margin:0;}
+  .kick-line{margin-top:2.3rem;font-family:var(--display);font-style:italic;font-size:clamp(1.4rem,3.2vw,2rem);line-height:1.25;color:var(--ochre);}
+
+  /* domains */
+  .domains{display:flex;flex-wrap:wrap;gap:.6rem;margin:2rem 0 1.1rem;}
+  .domains span{font-family:var(--mono);font-size:.82rem;letter-spacing:.02em;color:var(--cream);border:1px solid var(--rule);background:var(--ink-2);padding:.5rem .95rem;border-radius:999px;}
+  .domains span b{color:var(--ochre);font-weight:600;margin-right:.1rem;}
+  .domains-cap{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;color:var(--cream-faint);text-transform:uppercase;}
+
+  /* the soul — portability pullquote */
+  .soul{background:var(--ink-2);border:1px solid var(--rule);border-radius:8px;padding:2.4rem 2.2rem;margin:2rem 0;position:relative;overflow:hidden;}
+  .soul::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 120% at 100% 0%,rgba(217,162,91,.10),transparent 60%);pointer-events:none;}
+  .soul .lab{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ochre);margin-bottom:1.1rem;}
+  .soul p{font-size:clamp(1.15rem,2.4vw,1.45rem);line-height:1.45;color:var(--cream);margin:0 0 1rem;position:relative;}
+  .soul p:last-child{margin:0;}
+  .soul .turn{font-family:var(--display);font-style:italic;color:var(--ochre-soft);}
+
+  /* principles */
+  .principles{display:grid;gap:0;margin:2rem 0 0;}
+  .principle{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;padding:1.15rem 0;border-top:1px solid var(--rule-soft);align-items:start;}
+  .principle:first-child{border-top:none;}
+  .principle .pn{font-family:var(--mono);font-size:.74rem;color:var(--ochre);padding-top:.35rem;}
+  .principle .pt{font-family:var(--display);font-size:1.32rem;line-height:1.2;margin:0 0 .25rem;}
+  .principle .pd{color:var(--cream-soft);font-size:1rem;line-height:1.48;margin:0;}
+
+  /* the moment */
+  .moment{font-size:clamp(1.12rem,2.3vw,1.4rem);line-height:1.55;color:var(--cream);max-width:39rem;}
+  .moment b{color:var(--ochre);font-weight:600;}
+
+  footer{padding:4rem 0 5rem;border-top:1px solid var(--rule);text-align:center;}
+  footer .big{font-family:var(--display);font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.2;margin:0 auto 1.4rem;max-width:24rem;}
+  footer .big .yours{font-style:italic;color:var(--ochre);}
+  footer .sub{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-faint);}
+  footer .sub a{color:var(--cream-soft);text-decoration:none;border-bottom:1px solid var(--rule);}
+
+  /* one-time staggered reveal */
+  @keyframes up{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+  .r{opacity:0;animation:up .9s cubic-bezier(.2,.7,.2,1) forwards;}
+  .d1{animation-delay:.05s;}.d2{animation-delay:.18s;}.d3{animation-delay:.32s;}.d4{animation-delay:.46s;}
+  @media(prefers-reduced-motion:reduce){.r{opacity:1;animation:none;}}
+  @media(max-width:640px){body{font-size:17px;}.soul{padding:1.8rem 1.4rem;}.principle{grid-template-columns:1fr;gap:.2rem;}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="mark">Personal&nbsp;Context&nbsp;<b>Infrastructure</b></div>
+    <div class="meta">Full vision · Jun 2026</div>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <section class="hero" style="border-top:none;">
+    <div class="eyebrow r d1">What this becomes</div>
+    <h1 class="r d2">Your whole life,<br>one context —<br>and any agent<br>can use it. <span class="yours">Yours to keep.</span></h1>
+    <p class="lede r d3">Connect the sectors of your life — <b>finance, home, mail, contacts, calendar, health</b> first, then documents, GitHub, and more — once. They become a single, living context that any AI agent can query. <b>Change the agent whenever you want; the context stays with you.</b></p>
+  </section>
+
+  <section>
+    <div class="kicker">The north star</div>
+    <h2>Three promises. <em>Everything is measured against them.</em></h2>
+    <div class="steps">
+      <div class="step">
+        <div class="n">01 · One place</div>
+        <div class="h">Your whole life behind one surface, one grant.</div>
+        <p class="d">Not N apps with N logins and N configs. You connect the sectors of your life once, and from then on it's a single thing to point an agent at.</p>
+      </div>
+      <div class="step">
+        <div class="n">02 · Lightning fast</div>
+        <div class="h">It answers at the speed of memory, not the speed of the network.</div>
+        <p class="d">Reads come straight from a fresh local copy in milliseconds — we never wait on a dozen far-off services while you sit there. Acting is just as quick: the slow part of "do something" has always been figuring out <em>what</em> to act on, and we already know that from the local copy, so all that's left is the one unavoidable command going out. No tax on top.</p>
+      </div>
+      <div class="step">
+        <div class="n">03 · Harness-agnostic</div>
+        <div class="h">Swap the agent. Keep the context, the reach, the permission, the record.</div>
+        <p class="d">What one agent could see and do, the next one can too — the moment you point it here. Nothing to reconnect, nothing left behind.</p>
+      </div>
+    </div>
+    <p class="kick-line">If a decision weakens one of these, it's the wrong decision.</p>
+  </section>
+
+  <section>
+    <div class="kicker">The problem</div>
+    <p class="big-p narrow">Your life is scattered across a dozen apps that don't talk to each other. Every new AI assistant starts from zero — so you re-explain who you are, again. And the moment you <em>do</em> build up context with one, it's trapped inside that one company's product. Switch tools, and you start over.</p>
+  </section>
+
+  <section>
+    <div class="kicker">What it is</div>
+    <h2>Connect once. <em>Use it everywhere.</em></h2>
+    <div class="steps">
+      <div class="step">
+        <div class="n">01 · Connect</div>
+        <div class="h">Plug in the sectors of your life.</div>
+        <p class="d">One time. Your accounts, your home, your money, your health — linked in a single place.</p>
+      </div>
+      <div class="step">
+        <div class="n">02 · Understand</div>
+        <div class="h">It starts as one queryable gateway.</div>
+        <p class="d">A single, current surface over your connected sources — kept fresh, permissioned, and always backed by the real records it came from.</p>
+      </div>
+      <div class="step">
+        <div class="n">03 · Query</div>
+        <div class="h">Point any agent at it.</div>
+        <p class="d">It can query the same connected context. No re-connecting accounts, no copy-pasting your life into a chat box.</p>
+      </div>
+    </div>
+    <p class="kick-line">Then switch the agent. The connected context surface doesn't move. It's yours.</p>
+  </section>
+
+  <section>
+    <div class="kicker">The sectors of your life</div>
+    <div class="domains">
+      <span><b>›</b> Finance</span>
+      <span><b>›</b> Home</span>
+      <span><b>›</b> Mail</span>
+      <span><b>›</b> Contacts</span>
+      <span><b>›</b> Calendar</span>
+      <span><b>›</b> Documents</span>
+      <span><b>›</b> GitHub</span>
+      <span><b>›</b> Health</span>
+    </div>
+    <p class="domains-cap">The full map. Beta starts with six read-only connectors; anything new should be one more adapter.</p>
+  </section>
+
+  <section>
+    <div class="kicker">The one thing that makes it different</div>
+    <h2>Swap the harness. <em>Keep the context.</em></h2>
+    <div class="soul">
+      <div class="lab">Harness portability</div>
+      <p>Today, your context lives inside whatever assistant you happen to use. When you leave, it stays behind. Here it's the other way around: <strong>the context is yours, and the agent is the guest.</strong></p>
+      <p>Move from Claude, to a model running on your own machine, to whatever comes next — <span class="turn">the same connected context surface is available, and the new agent can query it immediately.</span> You change harnesses without ever reconnecting every account.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">What we hold to</div>
+    <h2>The context is the product. <em>The agent is a guest.</em></h2>
+    <div class="principles">
+      <div class="principle">
+        <div class="pn">01</div>
+        <div>
+          <p class="pt">It's yours.</p>
+          <p class="pd">You own the context. You can see it, correct it, take it with you, or delete it for good.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="pn">02</div>
+        <div>
+          <p class="pt">It's neutral.</p>
+          <p class="pd">We're not trying to be your assistant. We're the place your assistants plug into — which is exactly why we can be trusted to hold everything.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="pn">03</div>
+        <div>
+          <p class="pt">Everything's a connector.</p>
+          <p class="pd">Adding a new part of your life should be plugging in one more source. No special cases, no bespoke apps.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="pn">04</div>
+        <div>
+          <p class="pt">Every answer is backed by a real source.</p>
+          <p class="pd">Nothing invented. You can always see where a fact came from — the actual email, transaction, or reading behind it.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="pn">05</div>
+        <div>
+          <p class="pt">Nothing is read without your say-so.</p>
+          <p class="pd">Every agent, every query, is something you allow and can see. Your life isn't an open door.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">The moment</div>
+    <h2>What it feels like.</h2>
+    <p class="moment">Connect your accounts. Ask Claude what your week looks like — and it can query your calendar, inbox, home, and money through one surface. Then switch to a model running on your own laptop. <b>The same context is still there.</b> Nothing reconnected. Nothing copy-pasted. That's the product.</p>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="big">One context. Any agent. <span class="yours">Yours to keep.</span></p>
+    <p class="sub">Postern — the Personal Context Gateway · name frozen 2026-07-12</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,297 @@
+/* Mint a key + reveal-once — values ported from Paper 5KL-0 and 5QR-0. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding-bottom: 32px;
+}
+
+/* ── The mint form ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 720px;
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fieldLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.nameInput {
+  box-sizing: border-box;
+  height: 44px;
+  width: 100%;
+  padding: 0 16px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 18px;
+}
+.nameInput:disabled {
+  color: var(--color-faded);
+  cursor: not-allowed;
+}
+
+.fieldHint {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+.toggleGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.expiryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.expiryChip {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 16px;
+}
+.expiryChip[data-on] {
+  background: var(--color-paper-raised);
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+.submitRow {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.primaryBtn {
+  padding: 11px 26px;
+  background: var(--color-seal);
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 19px;
+}
+.primaryBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.submitNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+  max-width: 420px;
+}
+
+/* ── The reveal-once state ── */
+.keyCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 720px;
+  padding: 20px 24px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-left: 3px solid var(--color-seal);
+  border-radius: var(--radius-md);
+}
+
+.keyCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.keyCardLabel,
+.sectionLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.keyCopy {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: var(--weight-medium);
+  line-height: 16px;
+}
+
+.keyValue {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  line-height: 22px;
+  word-break: break-all;
+}
+
+.opens {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 720px;
+}
+
+.opensRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.opensNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+  margin-left: 8px;
+}
+
+.endpointCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 720px;
+  padding: 18px 22px;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+}
+
+.endpointHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.endpointCopy {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.endpointValue {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.endpointNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+/* The connect config — the register's `.recipe` / `.recipeCopy` treatment, reused verbatim so the
+   same block reads the same on both surfaces. It sits on `paper-raised` because this card's own
+   ground is `paper-inset`: a page laid on the inset, the inverse of the register's inset-on-raised.
+   No new token, no new size. */
+.configHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.configCopy {
+  flex-shrink: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--color-seal);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.configBlock {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.configBlock code {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.revealActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.revealLink {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}

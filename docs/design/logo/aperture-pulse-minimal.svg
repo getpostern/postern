@@ -1,0 +1,23 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Personal Context Gateway">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- app-icon ground (drop this rect for a transparent mark) -->
+  <rect width="256" height="256" rx="56" fill="#0A0E0D"/>
+
+  <!-- the iris ring = the gateway. Segmented (6 arcs) to keep the aperture DNA, minimally. -->
+  <circle cx="128" cy="128" r="90" fill="none" stroke="#1FC9A6" stroke-width="11"
+          stroke-linecap="round" stroke-dasharray="78 16.3" opacity="0.92"/>
+
+  <!-- the pulse = life. The hero: bold, centered, glowing. -->
+  <path d="M70 128 H110 L122 102 L134 154 L146 128 H186"
+        stroke="#1FC9A6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"
+        filter="url(#glow)"/>
+</svg>

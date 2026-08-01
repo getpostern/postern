@@ -1,0 +1,477 @@
+/* Settings — one scrolling hub of independent panels (`2YQ-0`): This gate · Remote access · Provider
+ * apps · Your data · Appearance. Many rows are drawn ahead of the API; those degrade honestly (a
+ * "not served" caption beside the drawn control), never a fabricated status. Every value via a token. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── This gate ─────────────────────────────────────────────────────────── */
+.gateCards {
+  display: flex;
+  gap: 16px;
+}
+.gateCard {
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-lg);
+}
+.gateCardLabel {
+  margin-bottom: 8px;
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+.gateNote {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.gateDot {
+  flex-shrink: 0;
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--state-idle);
+}
+.gateNoteText {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+.gateNoteAside {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+/* The "not served" caption beside a control drawn ahead of the API (degradation contract clause 2). */
+.notServed {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 16px;
+}
+
+/* ── generic settings row (remote access · provider apps · your data) ──── */
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-ink-a22);
+}
+.rowLast {
+  border-bottom: 0;
+}
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.rowMainGrow {
+  flex: 1 1 0;
+}
+.rowTitle {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: var(--weight-medium);
+  line-height: 20px;
+}
+.rowSub {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 18px;
+}
+/* A reason that belongs to the row's own copy rather than to its right-hand slot — used with
+ * `.notServed`, never instead of it (#118: the public address row must state what Postern cannot
+ * know about Funnel, and the right-hand slot there already carries served state). Measure and
+ * breathing room only: no new colour, no new type size, nothing that would make the row louder
+ * than its neighbours — remote access is a plain row by law (ADR 0035 §D2). */
+.rowCaption {
+  margin-top: 3px;
+  max-width: 640px;
+}
+.rowMono {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}
+.rowRight {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* status dot + word (served ok, or the idle "not served") */
+.statusChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 132px;
+  flex-shrink: 0;
+}
+.statusDot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+}
+.dotOk {
+  background: var(--state-ok);
+}
+.dotIdle {
+  background: var(--state-idle);
+}
+/* Reserved for the one exposure state that is neither on nor off: the operator has stopped
+   publishing (or changed the address) and the edge is still answering the internet until restart. */
+.dotAttention {
+  background: var(--state-attention);
+}
+.statusWord {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+/* a plain bordered action button (Export, Back up) */
+.btn {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  background: transparent;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  text-decoration: none;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.btnSeal {
+  border-color: var(--color-seal);
+  color: var(--color-seal);
+}
+
+/* the seal Edit · Clear inline actions (provider apps) */
+.rowActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  width: 120px;
+  flex-shrink: 0;
+}
+.linkAction {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+  text-decoration: none;
+}
+.linkAction:disabled {
+  color: var(--color-faded);
+}
+.actionSep {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+/* The Appearance segmented control's rules (.appearanceRow / .segmented / .seg / .segActive /
+ * .seg:disabled / .segDivider / .appearanceGloss) are gone with the section itself (§17.0). The
+ * ledger's decision toggle has its OWN segmented rules in LedgerPage.module.css — do not "restore"
+ * these for it. */
+
+/* a clear-provider-app confirm slot */
+.confirmSlot {
+  padding-top: 4px;
+}
+
+/* ── Remote access · the public-exposure row ─────────────────────────────
+ * A settings row that can EXPAND — the served address, the publish consent, the stop confirm and
+ * the published-routes disclosure all hang below the public-address row. The hairline moves from the row
+ * to the group so the row and its own expansions read as one block instead of four ruled bands.
+ * No new colour, no new type size: every rule below is one of the row vocabulary's, reused. */
+.rowGroup {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--color-ink-a22);
+}
+.rowFlush {
+  border-bottom: 0;
+}
+.rowPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 18px;
+}
+
+/* The sentence explaining the gap between what is saved and what is being served. `attention` is
+   the cleared-but-still-live case — the one a reader must not skim past. */
+.publishSentence {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 19px;
+  max-width: 640px;
+}
+.publishSentence[data-tone="attention"] {
+  color: var(--color-ink);
+}
+
+.publishLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+.publishInput {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 460px;
+  padding: 9px 12px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* The three consent sentences inside <ConfirmBar>'s blast-radius slot — that slot is a <div> of
+   running text, so these are block spans rather than <p>s nested inside it. */
+.consentBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.consentLine {
+  display: block;
+}
+
+/* What Postern cannot do for you (ADR 0035 §D9), below the bar. */
+.tailscaleNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 19px;
+  max-width: 640px;
+}
+
+/* What has actually reached this address (#119) — evidence, drawn beside the address it is about.
+ * Not the `.notServed` italic: that register means "the gateway did not tell us", and this is the
+ * gateway telling us. Same measure and type size as `.publishSentence`, so the two read as one
+ * paragraph of fact rather than a fact and an annotation. */
+.observation {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 19px;
+  max-width: 640px;
+}
+/* The negative is the valuable case: it is the only place in the product a user learns that their
+   Funnel is not carrying anything. It gets full ink for the same reason the cleared-but-still-live
+   sentence does — not louder, just not skimmable. No new colour, no badge, no dot: remote access
+   stays a plain row (ADR 0035 §D2). */
+.observation[data-evidence="nothing_yet"],
+.observation[data-evidence="reached_elsewhere"] {
+  color: var(--color-ink);
+}
+
+/* ── The setup instructions (#119) ──────────────────────────────────────
+ * The five prerequisites, the hostname and the one Funnel command — the path a first-time user was
+ * missing entirely between "here is a text field" and "type your public address". Built from the
+ * disclosure's vocabulary below (inset ground, small-caps head, hairline border) rather than a new
+ * one: this is reference matter that hangs off a plain row, not a callout advertising a feature. */
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+  max-width: 640px;
+  padding: 16px 18px;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+}
+.setupHead {
+  color: var(--color-ink);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.2em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+/* A real <ol> with its real markers: the numbers ARE the order, so they belong to the list rather
+   than to spans this file would have to keep in step. Styling `::marker` keeps them in the records
+   mono without an aria-hidden span a screen reader would have to be told to skip. */
+.setupSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding-left: 22px;
+}
+.setupStep {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 19px;
+}
+.setupStep::marker {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+/* The mark on the two steps that live where Postern cannot look. Typographic, never an icon: the
+   locked-assets plate is the only source of marks, and a glyph invented here would not be on it. */
+.stepMark {
+  display: inline-block;
+  margin-left: 9px;
+  padding-left: 9px;
+  border-left: 1px solid var(--color-ink-a25);
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  line-height: 12px;
+  text-transform: uppercase;
+  vertical-align: baseline;
+}
+/* A command inside running text (`tailscale up`) — the same records mono the ledger uses, boxed
+   just enough to read as something you type rather than something we said. */
+.setupCode {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+}
+.setupBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.setupBlockLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+.setupNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* ── The published-routes disclosure ────────────────────────────────────
+ * Rendered from the SERVED descriptor array. Never a hardcoded list: a bridge route that ships
+ * without a descriptor must not be able to reach the internet unannounced. */
+.disclosure {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+}
+.disclosureHead {
+  color: var(--color-ink);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.2em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+.doorList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.door {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.doorPath {
+  flex-shrink: 0;
+  width: 210px;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.doorWhy {
+  flex: 1 1 260px;
+  min-width: 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+.disclosureFoot {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+}

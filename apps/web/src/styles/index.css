@@ -1,0 +1,14 @@
+/* Postern Console — the one style entry point.
+ *
+ * `main.tsx` imports this file and nothing else. Order is load-bearing:
+ *   fonts  -> the @font-face declarations must exist before anything asks for a family
+ *   tokens -> the custom properties every later rule reads
+ *   base   -> the ground, the reset, the one focus ring, the reduced-motion guard
+ *
+ * These are plain CSS `@import`s of LOCAL relative files, bundled by Vite at build time.
+ * No stylesheet in this app may ever `@import` an off-origin URL (#81, law 3).
+ */
+
+@import "./fonts.css";
+@import "./tokens.css";
+@import "./base.css";

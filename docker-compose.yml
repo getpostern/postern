@@ -1,0 +1,199 @@
+# Postern — quickstart. Two containers: Postgres, and the gateway.
+#
+#     docker compose up -d
+#     open http://localhost:8787
+#
+# This file runs the PUBLISHED image and never builds one, so a first run is a pull rather than a
+# toolchain. Contributors who want to build from this checkout use the dev overlay instead:
+#
+#     docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# Everything below is a knob with a working default, except POSTGRES_PASSWORD, which has none — see
+# the `:?` form on it and the note there. Copy `.env.example` to `.env` to set any of them.
+
+services:
+  db:
+    image: postgres:16
+    # Restart on daemon/host restart. WITHOUT this, a Docker or host restart leaves db down (it had
+    # no policy) while app (unless-stopped) comes back and CRASH-LOOPS against a dead DB. app's
+    # depends_on/healthcheck only gates the initial `up`, NOT a daemon restart — so db needs its own
+    # policy for the stack to self-recover after a reboot.
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-pci}"
+      # ⚠️ NO DEFAULT, AND THAT IS THE POINT. `:?` makes compose refuse to start until you set this
+      # in `.env`. A shipped default password is a password every reader of this file already knows,
+      # and this database holds a faithful copy of your mail, calendar, contacts, finances and home.
+      # Generate one that cannot break the connection URL — hex has no characters that need escaping:
+      #     openssl rand -hex 24
+      # Do NOT use `openssl rand -base64 32` HERE: base64's alphabet includes `/` and `+`, compose
+      # cannot percent-encode them, and roughly two thirds of generated passwords then produce a
+      # DATABASE_URL that parses wrong or not at all. (base64 is exactly right for PCI_MASTER_KEY,
+      # which is read as a value rather than as part of a URL.)
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env — generate one with: openssl rand -hex 24}"
+      POSTGRES_DB: "${POSTGRES_DB:-pci}"
+      # ⚠️ Postgres only honours these on FIRST boot — they initialise the data directory. Changing
+      # them against an existing `pgdata` volume does not rename anything; it points the app at a
+      # role that does not exist. Set them before the first `up`, or not at all.
+    # NO `ports:` HERE, DELIBERATELY. The gateway reaches Postgres over the compose network at
+    # db:5432, which needs no host publish at all. Publishing the database to your machine buys you
+    # `psql -h localhost` and costs you a listener holding every row Postern has cached. Add one
+    # temporarily if you need to inspect the data, and make it loopback-scoped when you do:
+    #     ports: ["127.0.0.1:5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Gate the app's start on the DB actually accepting connections, not just the container being
+      # up. Interpolated on the HOST like the app's healthcheck, so it resolves to the same role and
+      # database the environment block above created.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pci} -d ${POSTGRES_DB:-pci}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    # The published multi-arch image (amd64 + arm64), built by this repository's release workflow.
+    # Pin a release in `.env` — `POSTERN_VERSION=v0.1.0` — when you want upgrades to be a decision
+    # rather than a `docker compose pull`.
+    image: "ghcr.io/getpostern/postern:${POSTERN_VERSION:-latest}"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # The app reaches Postgres over the COMPOSE NETWORK at db:5432 — that 5432 is the container's
+      # own port and deliberately is not a host-side knob. Credentials and database name track the db
+      # service above, so one `.env` line stays consistent across both services.
+      DATABASE_URL: "postgres://${POSTGRES_USER:-pci}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-pci}"
+      # The Console + admin/OAuth port. A knob, not a constant: 8787 is taken often enough that
+      # hardcoding it would make "my port is busy" a reason to edit a tracked file. Whatever you set,
+      # register `http://localhost:<REST_PORT>/api/oauth/<provider>/callback` with your provider app —
+      # the redirect_uri is exact-matched and moving the port moves it.
+      REST_PORT: "${REST_PORT:-8787}"
+      # Bind all interfaces INSIDE the container so the published port reaches the edge (a 127.0.0.1
+      # bind would be container-loopback-only and unreachable through the port mapping). Security
+      # comes from the HOST publish below being loopback-only, NOT from this.
+      REST_HOST: "0.0.0.0"
+      # Extra `Host:` header values the no-bearer admin/OAuth group accepts, comma-separated. The
+      # localhost / 127.0.0.1 / [::1] set is always allowed and needs no entry.
+      # ⚠️ This is a same-origin / DNS-rebinding guard, NOT authentication. Adding a name widens what
+      # is ACCEPTED; it adds no identity check. It does not make the admin surface safe to publish —
+      # see the ports note below.
+      REST_ALLOWED_HOSTS: "${REST_ALLOWED_HOSTS:-}"
+      # Where the built Console lives. Empty/unset resolves to the copy inside the image, which is
+      # right here; this line exists for someone serving a Console built elsewhere.
+      PCI_CONSOLE_DIR: "${PCI_CONSOLE_DIR:-}"
+      # The remote MCP edge — the agent surface. Opt-in via the port; a remote harness connects over
+      # Streamable HTTP at :8788/mcp, bearer-gated. 0.0.0.0 inside the container for the same reason
+      # REST_HOST is.
+      MCP_HTTP_PORT: "${MCP_HTTP_PORT:-8788}"
+      MCP_HTTP_HOST: "0.0.0.0"
+      # The MCP OAuth bridge — the ONE switch. Set MCP_PUBLIC_URL to the gateway's public https
+      # origin to enable same-origin OAuth discovery for hosted MCP clients; empty/unset = off, and
+      # the edge stays static-bearer-only. See docs/runbooks/remote-access.md.
+      MCP_PUBLIC_URL: "${MCP_PUBLIC_URL:-}"
+      # Reverse proxies the MCP edge should trust in front of it. Unset = none.
+      MCP_TRUSTED_PROXIES: "${MCP_TRUSTED_PROXIES:-}"
+      # Where YOUR browser lands coming back from a provider's consent screen. DEFAULT (empty/unset)
+      # = http://localhost:8787, the literal you register with Google / Microsoft / WHOOP. It is NOT
+      # MCP_PUBLIC_URL and it must never be a *.ts.net name — Google requires DNS-level ownership of
+      # the redirect's domain. Set it only if you serve this gateway on a domain you own.
+      PCI_PUBLIC_BASE_URL: "${PCI_PUBLIC_BASE_URL:-}"
+      # Where the browser lands INSIDE the Console after a SUCCESSFUL consent.
+      #
+      # ⚠️ THE BARE KEY (no `${…:-}`) IS DELIBERATE AND MUST STAY. This is the one variable here
+      # whose reader resolves with `??` against a bare `process.env` rather than through the
+      # empty-is-absent helper — so an empty string is not treated as unset, it is used as the
+      # redirect base, and a completed consent lands on `/` instead of the page showing the
+      # credential it just created. The bare-key form passes the variable through only when it is
+      # actually set, so the code's own default is reached untouched.
+      PCI_CONSOLE_SUCCESS_URL:
+      # Self-managed vault key (OPTIONAL). Empty/unset = the gateway autogenerates and persists one
+      # in the pci_master_key volume below. Set it BEFORE first boot: pointing a new key at a vault
+      # already sealed under the auto key makes the gateway refuse to start, by design.
+      #     openssl rand -base64 32
+      PCI_MASTER_KEY: "${PCI_MASTER_KEY:-}"
+      PCI_MASTER_KEY_ID: "${PCI_MASTER_KEY_ID:-}"
+      # Where the AUTOGENERATED key file is written. ⚠️ The pci_master_key volume mounts at /app/.pci
+      # — point this outside that directory and the key stops surviving restarts, which orphans every
+      # sealed credential. Leave it unset unless you are moving the mount too.
+      PCI_MASTER_KEY_PATH: "${PCI_MASTER_KEY_PATH:-}"
+      # Home Assistant instance URL — the push connector's websocket target. Per-instance, so it
+      # comes from .env. Use a LAN IP, not an mDNS `.local` name (which will not resolve inside a
+      # container). Empty/unset = the HA connector skips.
+      HA_URL: "${HA_URL:-}"
+      # Provider OAuth app credentials — YOUR apps; this gateway ships no shared client. The Console
+      # is the first-class way to supply them (stored in the database, sealed in the vault) and what
+      # you save there WINS over anything set here; these are the headless fallback for a deployment
+      # that never visits a UI. Google and WHOOP are confidential clients and need the secret;
+      # Microsoft is a public PKCE client and does not.
+      GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID:-}"
+      GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET:-}"
+      MICROSOFT_OAUTH_CLIENT_ID: "${MICROSOFT_OAUTH_CLIENT_ID:-}"
+      MICROSOFT_OAUTH_CLIENT_SECRET: "${MICROSOFT_OAUTH_CLIENT_SECRET:-}"
+      WHOOP_OAUTH_CLIENT_ID: "${WHOOP_OAUTH_CLIENT_ID:-}"
+      WHOOP_OAUTH_CLIENT_SECRET: "${WHOOP_OAUTH_CLIENT_SECRET:-}"
+      # Plaid (bank connections) — your own Plaid app, same table-first rule. PLAID_ENV picks the API
+      # host and ONLY the exact string "production" leaves the sandbox, so empty/unset is the safe
+      # default and a missing id/secret is a clear error at connect time.
+      PLAID_CLIENT_ID: "${PLAID_CLIENT_ID:-}"
+      PLAID_SECRET: "${PLAID_SECRET:-}"
+      PLAID_ENV: "${PLAID_ENV:-}"
+      # Dump each authenticated push-ingest body to a directory inside the container, for offline
+      # shape-diffing when a connector's payload is not what you expect. Empty/unset = off. The
+      # bodies are your real data, so unset it again when you are done. This line exists because a
+      # knob the code honours and the packaging never delivers is a knob that silently does nothing.
+      PCI_INGEST_DEBUG_DIR: "${PCI_INGEST_DEBUG_DIR:-}"
+      # Base backoff (ms) for retrying a provider 5xx during sync. Tuning only; unset = the built-in
+      # default, so the line is inert until you set it.
+      PCI_RETRY_5XX_BASE_MS: "${PCI_RETRY_5XX_BASE_MS:-}"
+    ports:
+      # ── THE ONE SECURITY DECISION IN THIS FILE ──────────────────────────────────────────────────
+      # Loopback-only on the HOST. Port 8787 serves the Console AND the admin surface together:
+      # onboarding, credential paste, audit read, and the route that MINTS AN AGENT KEY with access
+      # to every sector you have granted. That group has NO per-request authentication — no bearer,
+      # no password, no session. What guards it is a Host-header allowlist, and the Host header is a
+      # string the client chooses: anyone who can reach the port can send `Host: localhost:8787` and
+      # mint a key. It is one curl away and the reply is 201 with the key in it.
+      #
+      # ⚠️ DO NOT DROP THE "127.0.0.1:" PREFIX. Widening REST_ALLOWED_HOSTS is not a hardening step
+      # that makes exposure safe — it widens which Host values are ACCEPTED and adds no
+      # authentication that is not there. On Linux, Docker's publish rules are inserted ahead of most
+      # host firewall rules, so a `ufw deny 8787` does not save you either. There is no supported
+      # configuration in which publishing this port to a network is safe, so there is no recipe here
+      # for doing it.
+      #
+      # TO REACH THE CONSOLE FROM ANOTHER MACHINE, do not move this address. Terminate an
+      # AUTHENTICATED tunnel or reverse proxy on loopback — `tailscale serve`, an SSH tunnel, a proxy
+      # that authenticates before it forwards. The port stays local; the tunnel carries the identity.
+      #
+      # Published 1:1 (same port outside and in) so the address in your browser IS REST_PORT — the
+      # OAuth redirect default derives from it, and a rewrite here would silently break consent.
+      - "127.0.0.1:${REST_PORT:-8787}:${REST_PORT:-8787}"
+      # The remote MCP edge. This one IS bearer-gated, which is real authentication — and it is still
+      # published loopback-only, because remote exposure is a decision you make in the Console
+      # (Settings → Remote access), not by editing a publish address here.
+      - "127.0.0.1:${MCP_HTTP_PORT:-8788}:${MCP_HTTP_PORT:-8788}"
+    restart: unless-stopped
+    volumes:
+      # The vault master key MUST persist across restarts — otherwise a restart regenerates it and
+      # every sealed secret (OAuth tokens, access URLs) becomes undecryptable. First boot generates
+      # and persists it here, mode 0600.
+      # ⚠️ NEVER `docker compose down -v`. That deletes this volume and every credential with it.
+      - pci_master_key:/app/.pci
+    healthcheck:
+      # node's global fetch (there is no curl in node:22-slim) — a real /healthz probe. The port MUST
+      # track REST_PORT above: hardcoded, it probes a port nothing listens on the moment you move
+      # yours, and the container never goes healthy while the app serves fine.
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - "fetch('http://127.0.0.1:${REST_PORT:-8787}/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  pgdata:
+  pci_master_key:

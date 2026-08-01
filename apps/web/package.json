@@ -1,0 +1,41 @@
+{
+  "name": "@postern/console",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Postern — the operator Console (React 18 + Vite + TS).",
+  "license": "AGPL-3.0-or-later",
+  "homepage": "https://github.com/getpostern/postern#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getpostern/postern.git",
+    "directory": "apps/web"
+  },
+  "bugs": {
+    "url": "https://github.com/getpostern/postern/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^27.0.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
+  }
+}

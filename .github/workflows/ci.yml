@@ -1,0 +1,94 @@
+name: ci
+
+# Build, typecheck, test and lint on every pull request, and on pushes to main.
+#
+# WHY `push` IS SCOPED TO MAIN. A fork's or a contributor's branch push would otherwise run this job
+# twice for the same commit — once for the push, once for the pull request — for no extra signal.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege. This job reads the repository and writes nothing; the only workflow here that
+# needs more is release-image.yml, which asks for `packages: write` at its own job level.
+permissions:
+  contents: read
+
+# One run per ref. A new push cancels the previous run for the same branch — except on main, where
+# every commit's result is a record worth keeping.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # A real Postgres, health-gated so steps only start once it accepts connections. Roughly a sixth
+    # of this suite is DB-gated and SKIPS ITSELF when DATABASE_URL is unset — a database-less CI
+    # would report success while never exercising the vault, sync, query or REST paths. That is the
+    # false-green this service container exists to close.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: pci
+          POSTGRES_PASSWORD: pci
+          POSTGRES_DB: pci_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pci -d pci_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # Both `migrate` and `test` resolve the database from here. The name ending in `_test` is
+    # load-bearing, not cosmetic: a fail-closed guard aborts the whole run unless DATABASE_URL names
+    # a database matching /_test$/, because the DB-gated suites issue real INSERTs and DELETEs and
+    # once wiped a live dataset. This container is disposable, so it passes the guard honestly.
+    env:
+      DATABASE_URL: postgres://pci:pci@localhost:5432/pci_test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies (clean, lockfile-exact)
+        run: npm ci
+
+      # apps/web (the Console) is a SEPARATE npm project with its own lockfile, and the root test
+      # runner collects its *.test.tsx files. Without this step every Console suite dies on "Cannot
+      # find package 'react'" and the run is red for a reason that has nothing to do with the change.
+      # Do NOT "fix" that by excluding apps/web from the test config: it silently drops real tests.
+      - name: Install Console dependencies (apps/web has its own lockfile)
+        run: npm ci --prefix apps/web
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # The root tsconfig only includes src/ — it never sees apps/web. The Console needs its own pass
+      # or every Console type error ships green.
+      - name: Typecheck Console
+        run: npm run typecheck --prefix apps/web
+
+      - name: Build (tsc -> dist/)
+        run: npm run build
+
+      - name: Migrate (forward-only migrator against the service database)
+        run: npm run migrate
+
+      - name: Test (full suite — the DB-gated suites run because DATABASE_URL is set)
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Audit production dependencies (high severity and above)
+        run: npm audit --omit=dev --audit-level=high

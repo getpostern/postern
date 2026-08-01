@@ -1,0 +1,145 @@
+name: release-image
+
+# Build and publish the multi-architecture container image to this repository's own GitHub Container
+# Registry namespace.
+#
+# TRIGGERS. A `v*` tag is the release; `workflow_dispatch` is the manual re-run for when a publish
+# fails on something that is not the code (a registry outage, a permissions change). Nothing here
+# runs on a pull request: a PR must never be able to publish an image.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+# Least privilege, and every line of it is needed by exactly one step:
+#   contents: read       — check out the source
+#   packages: write      — push to ghcr.io under this repository's owner
+#   id-token: write      — the OIDC token the attestation is signed with
+#   attestations: write  — record the build provenance against the pushed digest
+# The token is the workflow's own GITHUB_TOKEN. No personal access token, no organisation secret,
+# nothing to rotate, and nothing that keeps working if this repository is deleted.
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+
+# Never two publishes of the same tag at once, and never cancel one half-way: an interrupted push
+# can leave a manifest list referring to a blob that is still uploading.
+concurrency:
+  group: release-image-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # FAIL BEFORE ANYTHING IS BUILT if this run has no version to publish. `workflow_dispatch` can
+      # be launched from any ref, and from a branch the tag derivation below produces an EMPTY tag
+      # list — which `push: true` then turns into a build that uploads nothing while reporting green,
+      # or an opaque failure deep inside buildx. Neither reads as "you dispatched the wrong ref".
+      - name: Refuse a run with no version tag to publish
+        run: |
+          case "${GITHUB_REF}" in
+            refs/tags/v*) echo "publishing ${GITHUB_REF#refs/tags/}" ;;
+            *)
+              echo "::error::release-image publishes a tagged version. This run is on ${GITHUB_REF}."
+              echo "::error::Re-run workflow_dispatch with a v* tag selected as the ref, or push a v* tag."
+              exit 1
+              ;;
+          esac
+
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # amd64 is the runner's own architecture; arm64 needs emulation to build here. Both matter:
+      # arm64 is every Apple Silicon Mac and every Raspberry Pi class box, which is exactly the
+      # hardware people self-host a personal gateway on.
+      - name: Set up QEMU (for the arm64 leg)
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Tags derived from the ref, not hand-written:
+      #   v1.2.3 -> :1.2.3, :1.2, :1  and, on a tag PUSH, :latest
+      #
+      # `latest` keys on the EVENT, not on the ref shape. `startsWith(github.ref, 'refs/tags/v')` was
+      # wrong for the stated intent: workflow_dispatch can be launched with a tag selected as its
+      # ref, which satisfies that condition exactly — so a repair run against an OLD tag would have
+      # dragged the tag every quickstart pulls by default backwards onto it. A dispatch is a re-run
+      # or a repair; it republishes the version tags and moves nothing else.
+      - name: Derive image tags
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
+
+      # The preflight above proves the REF is a version tag; this proves the DERIVATION produced
+      # something from it. Two different failures — a malformed tag (`v1.2.3-rc.1+build`, a `v` with
+      # no semver behind it) satisfies the first and can still yield nothing here, and `push: true`
+      # with no tags is the silent-green case.
+      - name: Refuse an empty tag list
+        run: |
+          tags='${{ steps.meta.outputs.tags }}'
+          if [ -z "$(printf '%s' "$tags" | tr -d '[:space:]')" ]; then
+            echo "::error::${GITHUB_REF#refs/tags/} produced no image tags — is it valid semver?"
+            exit 1
+          fi
+          printf 'tags to publish:\n%s\n' "$tags"
+
+      - name: Build and push (linux/amd64 + linux/arm64)
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          # OCI labels are declared in the Dockerfile — including
+          # org.opencontainers.image.source, which is what links the published package back to this
+          # repository. Without it the package has no repository, defaults to private, and renders no
+          # README on its page. metadata-action adds the per-build ones (revision, created).
+          labels: ${{ steps.meta.outputs.labels }}
+          # SLSA provenance and an SBOM, attached to the manifest list. `mode=max` records the full
+          # build definition rather than just the outputs.
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # A signed, verifiable statement that this digest was built by this workflow from this commit.
+      # Anyone can check it without trusting us:
+      #     gh attestation verify oci://ghcr.io/getpostern/postern:<tag> --repo <owner>/<repo>
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: Summary
+        run: |
+          {
+            echo "### Published"
+            echo
+            echo '```'
+            echo "${{ steps.meta.outputs.tags }}"
+            echo '```'
+            echo
+            echo "digest: \`${{ steps.build.outputs.digest }}\`"
+            echo
+            echo "A new package is PRIVATE until somebody makes it public in the package settings."
+          } >> "$GITHUB_STEP_SUMMARY"

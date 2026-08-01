@@ -1,0 +1,26 @@
+# Build context hygiene: never ship installed deps, prior build output, secrets, or VCS/agent cruft.
+# npm ci rebuilds node_modules and tsc/vite rebuild dist inside the image.
+node_modules
+**/node_modules
+dist
+**/dist
+
+# Secrets (the local master key) and local env — NEVER copy into an image layer.
+.pci
+.env
+.env.*
+
+# VCS, agent worktrees, editor/OS cruft, logs.
+.git
+.gitignore
+.claude
+.obsidian
+*.log
+npm-debug.log*
+.DS_Store
+
+# Docker + docs aren't needed inside the image.
+Dockerfile
+.dockerignore
+docker-compose.yml
+docs

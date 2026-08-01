@@ -1,0 +1,124 @@
+/* Inspector cell variants — exact values ported from the Finance inspector artboard (6I9-0, node
+ * 6M3-0, get_jsx inline-styles). Each variant is the inner span the LedgerTable cell wraps; the
+ * kit's `.cell` sets the lane, these set the ink and type. */
+
+.text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--color-ink);
+}
+
+.muted {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--color-faded);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--color-ink);
+}
+
+.monoMuted {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-faded);
+}
+
+.category {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 16px;
+  color: var(--color-faded);
+}
+
+.datetime {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--color-faded);
+}
+
+.num {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--color-ink);
+  text-align: right;
+}
+
+/* A signed currency amount (#100 item 3). Same lane treatment as `.num`, plus tabular figures so a
+ * column of amounts aligns on the decimal — a money column is read down, not across. */
+.money {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--color-ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Per-row provenance — the `__source` column (#65 / #122). All four variants use the Source-cell
+ * treatment read off the Finance inspector artboard (`6I9-0` / node 6ML-0, get_jsx inline-styles):
+ * mono 12px / 16px, faded ink for a named provider, and the SECTOR's own ink (marigold) for a deduped
+ * union winner — which is exactly what the plate draws in that lane ("Plaid" faded, "union" marigold).
+ * The plate has no Source column on the calendar / contacts / mail artboards, so the other sectors
+ * inherit this one verbatim rather than growing a second treatment for the same fact. */
+.sourceUnion {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--sector-finance);
+}
+
+.sourceProvider {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-faded);
+}
+
+/* `provider: null` on a resolved row — the gateway fails CLOSED rather than guessing an origin. It is
+ * a real served ANSWER, so it takes the same upright ink as a named provider; only the words differ. */
+.sourceUnknown {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-faded);
+}
+
+/* The wire carried no provenance at all (a gateway older than #65/#122). Italic here marks a cell that
+ * is NOT a value, so it cannot be misread as one — the same reason the plate italicises its own notes.
+ *
+ * Its two former companions in that register are gone (#106): `AgentsBand.module.css
+ * .agentSeenUnserved` (deleted — an unserved last-seen prints nothing now) and
+ * `InspectorPage.module.css .degradedReason` (no longer italic — it carries a sentence, not a gap).
+ * This one survives on purpose and is a different thing from both: a TABLE CELL, in a lane of mono
+ * values, whose 12px/16px treatment is read off the Finance inspector artboard (`6I9-0` / node `6ML-0`).
+ * A cell must hold something, and italic is what says "this is not one of the values above". */
+.sourceUnserved {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 16px;
+  color: var(--color-faded);
+}
+
+/* Home entity state (#59): the state colour axis, separate from sector ink. Reachable is quiet ink;
+ * a genuinely-unavailable entity is the only one that gets the error colour. */
+.text[data-state-tone="ok"] {
+  color: var(--color-ink);
+}
+.text[data-state-tone="idle"] {
+  color: var(--color-faded);
+}
+.text[data-state-tone="error"] {
+  color: var(--state-error);
+}

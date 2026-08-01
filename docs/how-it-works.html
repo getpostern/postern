@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postern — How it works, end to end</title>
+<style>
+  :root {
+    --bg: #0a0d12;
+    --bg-2: #0e1219;
+    --panel: #121823;
+    --panel-2: #161d2a;
+    --line: #222c3c;
+    --line-soft: #1a2331;
+    --ink: #e7edf5;
+    --ink-2: #aab6c6;
+    --ink-3: #6f7d90;
+    --pulse: #2ee6c8;     /* the life signal */
+    --pulse-2: #5cf0d6;
+    --aperture: #7aa2ff;  /* the gateway */
+    --violet: #a98bff;
+    --warn: #ffcf6b;
+    --bad: #ff7a8a;
+    --code-bg: #0c1017;
+    --measure: 72ch;
+    --radius: 14px;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 1.5rem; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1100px 620px at 78% -8%, rgba(46,230,200,0.10), transparent 60%),
+      radial-gradient(900px 500px at 12% 4%, rgba(122,162,255,0.10), transparent 55%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+  .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 56px; align-items: start; }
+  @media (max-width: 940px) { .layout { grid-template-columns: 1fr; } nav.toc { position: static !important; max-height: none !important; } }
+
+  /* ---------- hero ---------- */
+  header.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line-soft); }
+  .hero-inner { padding: 64px 0 52px; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
+  @media (max-width: 820px) { .hero-inner { grid-template-columns: 1fr; } .aperture-mark { order: -1; } }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--pulse); margin: 0 0 16px; }
+  h1.title { font-family: var(--serif); font-weight: 600; font-size: clamp(34px, 5vw, 52px); line-height: 1.08; margin: 0 0 18px; letter-spacing: -0.01em; }
+  h1.title .grad { background: linear-gradient(100deg, var(--aperture), var(--pulse) 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { font-size: 20px; color: var(--ink-2); max-width: 58ch; margin: 0; }
+  .lede b { color: var(--ink); font-weight: 600; }
+  .meta-row { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip { font-family: var(--mono); font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); background: rgba(255,255,255,0.02); padding: 5px 11px; border-radius: 999px; }
+  .chip b { color: var(--pulse); font-weight: 600; }
+
+  /* aperture mark */
+  .aperture-mark { width: 188px; height: 188px; filter: drop-shadow(0 0 36px rgba(46,230,200,0.28)); }
+  @keyframes pulse { 0%,100% { opacity: .55; r: 7; } 50% { opacity: 1; r: 9.5; } }
+  .aperture-mark .core { transform-origin: center; animation: pulse 3.4s ease-in-out infinite; }
+
+  /* ---------- toc ---------- */
+  nav.toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; padding: 26px 0 40px; font-size: 14px; }
+  nav.toc .toc-h { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 12px; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+  nav.toc li { counter-increment: toc; margin: 2px 0; }
+  nav.toc a { display: block; color: var(--ink-2); text-decoration: none; padding: 5px 10px 5px 34px; position: relative; border-radius: 8px; line-height: 1.35; }
+  nav.toc a::before { content: counter(toc, decimal-leading-zero); position: absolute; left: 8px; top: 5px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+  nav.toc a:hover { color: var(--ink); background: rgba(122,162,255,0.07); }
+
+  /* ---------- content ---------- */
+  main { padding: 40px 0 96px; min-width: 0; }
+  section { padding-top: 30px; margin-bottom: 26px; scroll-margin-top: 18px; }
+  section > h2 { font-size: 13px; }
+  h2.sec { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--pulse); margin: 0 0 6px; }
+  h3.head { font-family: var(--serif); font-weight: 600; font-size: clamp(24px, 3.2vw, 32px); line-height: 1.18; margin: 0 0 18px; letter-spacing: -0.01em; }
+  p { color: var(--ink-2); max-width: var(--measure); }
+  p strong, li strong { color: var(--ink); font-weight: 600; }
+  a.inline { color: var(--pulse-2); text-decoration: none; border-bottom: 1px solid rgba(92,240,214,0.3); }
+  a.inline:hover { border-bottom-color: var(--pulse-2); }
+  code { font-family: var(--mono); font-size: 0.86em; background: rgba(122,162,255,0.10); color: #cbd8ee; padding: 1.5px 6px; border-radius: 6px; border: 1px solid var(--line-soft); }
+  ul, ol.body { max-width: var(--measure); color: var(--ink-2); padding-left: 22px; }
+  ul li, ol.body li { margin: 7px 0; }
+  ul li::marker { color: var(--pulse); }
+  hr.div { border: none; border-top: 1px solid var(--line-soft); margin: 46px 0; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* code block */
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.65; color: #c6d2e6; max-width: var(--measure); }
+  pre .c { color: #5d6b80; font-style: italic; }
+  pre .k { color: var(--violet); }
+  pre .s { color: var(--pulse-2); }
+  pre .n { color: var(--warn); }
+  pre .f { color: var(--aperture); }
+
+  /* tables */
+  .tbl { width: 100%; border-collapse: collapse; margin: 6px 0 8px; font-size: 14.5px; max-width: var(--measure); }
+  .tbl th { text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .tbl td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); color: var(--ink-2); vertical-align: top; }
+  .tbl td code { white-space: nowrap; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl .yes { color: var(--pulse); }
+  .tbl .no { color: var(--ink-3); }
+
+  /* callouts */
+  .call { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin: 22px 0; max-width: var(--measure); background: var(--panel); position: relative; }
+  .call .lab { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0 0 8px; }
+  .call p { margin: 0; max-width: none; }
+  .call.key { border-left: 3px solid var(--pulse); } .call.key .lab { color: var(--pulse); }
+  .call.floor { border-left: 3px solid var(--aperture); } .call.floor .lab { color: var(--aperture); }
+  .call.not { border-left: 3px solid var(--bad); } .call.not .lab { color: var(--bad); }
+  .call.warn { border-left: 3px solid var(--warn); } .call.warn .lab { color: var(--warn); }
+
+  /* cards */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 8px 0; }
+  @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+  .card .num { font-family: var(--mono); font-size: 12px; color: var(--pulse); }
+  .card h4 { font-size: 18px; margin: 8px 0 8px; color: var(--ink); }
+  .card p { font-size: 14.5px; margin: 0; max-width: none; }
+
+  /* diagram */
+  .diagram { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; margin: 22px 0; max-width: var(--measure); }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .dg-cap { font-size: 13px; color: var(--ink-3); margin: 12px 0 0; text-align: center; font-family: var(--mono); }
+  .lane { font-family: var(--mono); }
+
+  /* stat band */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin: 20px 0; max-width: var(--measure); }
+  .stats .s { background: var(--panel); padding: 22px 18px; text-align: center; }
+  .stats .v { font-family: var(--serif); font-size: 30px; font-weight: 600; color: var(--pulse); }
+  .stats .l { font-size: 13px; color: var(--ink-2); margin-top: 4px; }
+
+  footer { border-top: 1px solid var(--line-soft); padding: 30px 0 60px; color: var(--ink-3); font-size: 13.5px; font-family: var(--mono); }
+  footer a { color: var(--ink-2); text-decoration: none; }
+  .kbd { font-family: var(--mono); font-size: 0.85em; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 7px; color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-inner">
+      <div>
+        <p class="eyebrow">Postern · how it works</p>
+        <h1 class="title">One neutral surface over <span class="grad">the sectors of your life</span>.</h1>
+        <p class="lede">Connect your accounts once. Any agent then <b>reads your life and acts on it</b> — finance, mail, calendar, contacts, health, home — through <b>one grant and seven verbs</b>, served from a local cache in milliseconds. The agent reasons; the gateway authenticates, normalizes, stores, serves, and dispatches. <b>No LLM on our side.</b></p>
+        <div class="meta-row">
+          <span class="chip"><b>7</b>&nbsp;primitives</span>
+          <span class="chip"><b>1</b>&nbsp;grant per sector</span>
+          <span class="chip">cache-first, <b>live-on-demand</b></span>
+          <span class="chip">harness-agnostic <b>MCP</b></span>
+        </div>
+      </div>
+      <svg class="aperture-mark" viewBox="0 0 200 200" aria-label="Aperture and pulse">
+        <defs>
+          <radialGradient id="iris" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#2ee6c8"/>
+            <stop offset="60%" stop-color="#7aa2ff"/>
+            <stop offset="100%" stop-color="#0e1219"/>
+          </radialGradient>
+        </defs>
+        <g fill="none" stroke="#7aa2ff" stroke-width="2" opacity="0.85">
+          <circle cx="100" cy="100" r="78"/>
+        </g>
+        <g stroke="#2ee6c8" stroke-width="2.4" fill="none" opacity="0.9">
+          <!-- aperture blades -->
+          <path d="M100 30 L138 70 L100 100 Z" fill="rgba(122,162,255,.10)"/>
+          <path d="M170 100 L130 138 L100 100 Z" fill="rgba(46,230,200,.10)"/>
+          <path d="M100 170 L62 130 L100 100 Z" fill="rgba(122,162,255,.10)"/>
+          <path d="M30 100 L70 62 L100 100 Z" fill="rgba(46,230,200,.10)"/>
+          <path d="M146 54 L150 106 L100 100 Z" fill="rgba(122,162,255,.06)"/>
+          <path d="M146 146 L94 150 L100 100 Z" fill="rgba(46,230,200,.06)"/>
+          <path d="M54 146 L50 94 L100 100 Z" fill="rgba(122,162,255,.06)"/>
+          <path d="M54 54 L106 50 L100 100 Z" fill="rgba(46,230,200,.06)"/>
+        </g>
+        <circle class="core" cx="100" cy="100" r="8" fill="url(#iris)"/>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+  <nav class="toc">
+    <p class="toc-h">Contents</p>
+    <ol>
+      <li><a href="#model">The mental model</a></li>
+      <li><a href="#mantras">The three mantras</a></li>
+      <li><a href="#primitives">The seven primitives</a></li>
+      <li><a href="#flow">A query, end to end</a></li>
+      <li><a href="#cache">Cache vs. live — speed &amp; freshness</a></li>
+      <li><a href="#fetchlive">How <code>fetch_live</code> works</a></li>
+      <li><a href="#actions">The action path</a></li>
+      <li><a href="#engine">Inside the engine</a></li>
+      <li><a href="#connector">The connector contract</a></li>
+      <li><a href="#fast">Why it&rsquo;s fast</a></li>
+      <li><a href="#advantage">The advantage (measured)</a></li>
+      <li><a href="#not">What it deliberately is <em>not</em></a></li>
+      <li><a href="#connect">Point an agent at it</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+  <!-- 1 -->
+  <section id="model">
+    <h2 class="sec">The mental model</h2>
+    <h3 class="head">A uniform query-and-command layer over everything you&rsquo;ve connected — with a cache for speed and a live path for truth.</h3>
+    <p>A Volvo, a bank, Hue bulbs, a Whoop strap, your inbox — wildly different real-world APIs. Through the gateway an agent never learns those four (or forty) API shapes. It learns <strong>one</strong>: pick a sector, describe the fields, optionally act. Every source collapses to the same small surface.</p>
+    <p>The hard, slow part of working with a raw vendor API is <strong>discovery</strong> — enumerate the entities, filter them, check their state, check what&rsquo;s supported. The gateway <strong>pre-pays that discovery tax once</strong>, during sync, and folds it into an indexed local store. The agent re-pays it on every cold question against a raw API; through the gateway, it&rsquo;s already paid. That single shift — moving cost off <em>access</em> and onto <em>judgment</em> — is the whole design.</p>
+    <div class="call key">
+      <p class="lab">The throughline</p>
+      <p>The agent supplies <strong>intent it discovered from us</strong>; the gateway owns <strong>all source I/O</strong> — auth, transport, pagination, rate limits, selector resolution, dispatch, the re-sync. Swap a Volvo for a Tesla, or Hue for LIFX, and nothing the agent knows changes: the discovery surface re-describes the new capabilities in the same shape.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 2 -->
+  <section id="mantras">
+    <h2 class="sec">The three mantras</h2>
+    <h3 class="head">Every design decision is measured against these.</h3>
+    <div class="cards">
+      <div class="card">
+        <div class="num">01</div>
+        <h4>One place</h4>
+        <p>Your whole life behind one surface and one grant — not N apps with N configs. A new sector is a new table, never a new account.</p>
+      </div>
+      <div class="card">
+        <div class="num">02</div>
+        <h4>Lightning fast</h4>
+        <p>Reads serve from the local cache in milliseconds. Actions add <em>zero</em> gateway overhead around the single unavoidable dispatch. We never long-poll the source on the hot path.</p>
+      </div>
+      <div class="card">
+        <div class="num">03</div>
+        <h4>Harness-agnostic</h4>
+        <p>Swap the harness, keep the context, the capabilities, the permission, and the audit. Paste a URL into any agent.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 3 -->
+  <section id="primitives">
+    <h2 class="sec">The interface</h2>
+    <h3 class="head">Seven primitives — discover, read, act.</h3>
+    <p>Everything an agent can do maps onto these seven functions. They are the MCP tools, and they are mirrored 1:1 by a REST surface (for non-MCP harnesses and the Console). Reads and writes are symmetric: each has a <em>discover</em> verb and a <em>do</em> verb.</p>
+    <table class="tbl">
+      <thead><tr><th>Primitive</th><th>Kind</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>describe_context</code></td><td>discover</td><td>Which sectors you&rsquo;re granted + each connection&rsquo;s <code>last_synced_at</code> freshness. The agent self-serves the speed/freshness tradeoff from here.</td></tr>
+        <tr><td><code>get_schema</code></td><td>discover</td><td>The queryable fields + types for a sector (the read contract). Cached in memory.</td></tr>
+        <tr><td><code>query</code></td><td><span class="yes">read</span></td><td>Structured read from the cache — filters, operators, server-side aggregation. Always instant, never touches a provider.</td></tr>
+        <tr><td><code>get_record</code></td><td><span class="yes">read</span></td><td>One record by id, drilled truthfully from the cache (tombstones included).</td></tr>
+        <tr><td><code>fetch_live</code></td><td><span class="yes">read</span></td><td>The one read-time upstream path (opt-in, bounded): a sector sync-now, or a per-record live drill against the source.</td></tr>
+        <tr><td><code>list_actions</code></td><td>discover</td><td>The action catalog across granted sectors — served from the cache, never a live poll.</td></tr>
+        <tr><td><code>invoke_action</code></td><td><span class="yes">act</span></td><td>Perform one action. We resolve the target deterministically and dispatch the single live call.</td></tr>
+      </tbody>
+    </table>
+    <div class="call key">
+      <p class="lab">The symmetry that makes it learnable</p>
+      <p><code>get_schema</code> + <code>query</code> are to reading what <code>list_actions</code> + <code>invoke_action</code> are to acting. Discover the surface from <em>us</em> (from cache), then do the one thing. The agent never crafts a vendor request and never holds a vendor credential.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 4 -->
+  <section id="flow">
+    <h2 class="sec">A worked example</h2>
+    <h3 class="head">&ldquo;When was the home last vacuumed?&rdquo; — the canonical loop.</h3>
+    <p>The rhythm is always the same: a <strong>broad cache query to find the right handle</strong>, then a <strong>narrow live fetch to trust the value</strong>.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Request flow from agent through the edge and core to Postgres or the source">
+        <defs>
+          <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#5cf0d6"/>
+          </marker>
+          <marker id="arrowb" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#7aa2ff"/>
+          </marker>
+        </defs>
+        <!-- nodes -->
+        <g font-family="ui-monospace, monospace" font-size="13">
+          <rect x="8" y="96" width="120" height="58" rx="10" fill="#161d2a" stroke="#222c3c"/>
+          <text x="68" y="120" fill="#e7edf5" text-anchor="middle">Agent</text>
+          <text x="68" y="138" fill="#6f7d90" text-anchor="middle" font-size="11">any harness</text>
+
+          <rect x="190" y="96" width="130" height="58" rx="10" fill="#161d2a" stroke="#222c3c"/>
+          <text x="255" y="118" fill="#e7edf5" text-anchor="middle">MCP / REST</text>
+          <text x="255" y="136" fill="#6f7d90" text-anchor="middle" font-size="11">edge · grant · audit</text>
+
+          <rect x="382" y="96" width="120" height="58" rx="10" fill="#161d2a" stroke="#2ee6c8"/>
+          <text x="442" y="118" fill="#e7edf5" text-anchor="middle">core fn</text>
+          <text x="442" y="136" fill="#6f7d90" text-anchor="middle" font-size="11">validate · build SQL</text>
+
+          <rect x="566" y="22" width="180" height="56" rx="10" fill="#10151e" stroke="#2ee6c8"/>
+          <text x="656" y="46" fill="#2ee6c8" text-anchor="middle">Postgres — the cache</text>
+          <text x="656" y="64" fill="#6f7d90" text-anchor="middle" font-size="11">query · get_record (instant)</text>
+
+          <rect x="566" y="172" width="180" height="56" rx="10" fill="#10151e" stroke="#7aa2ff"/>
+          <text x="656" y="196" fill="#7aa2ff" text-anchor="middle">the source</text>
+          <text x="656" y="214" fill="#6f7d90" text-anchor="middle" font-size="11">fetch_live · invoke_action</text>
+        </g>
+        <!-- edges -->
+        <line x1="128" y1="125" x2="186" y2="125" stroke="#5cf0d6" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="320" y1="125" x2="378" y2="125" stroke="#5cf0d6" stroke-width="2" marker-end="url(#arrow)"/>
+        <path d="M502 116 Q540 96 562 64" stroke="#2ee6c8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M502 138 Q540 172 562 192" stroke="#7aa2ff" stroke-width="2" fill="none" marker-end="url(#arrowb)" stroke-dasharray="5 4"/>
+        <text x="535" y="88" fill="#2ee6c8" font-family="ui-monospace,monospace" font-size="10.5">hot path · ms</text>
+        <text x="520" y="166" fill="#7aa2ff" font-family="ui-monospace,monospace" font-size="10.5">opt-in · bounded</text>
+      </svg>
+      <p class="dg-cap">solid = cache hot path (always instant) &nbsp;·&nbsp; dashed = the one opt-in upstream path</p>
+    </div>
+    <ol class="body">
+      <li><strong>query</strong> <code>{ domain: "vacuum" }</code> → finds two robots. The agent didn&rsquo;t know their names; the cache let it discover them.</li>
+      <li><strong>fetch_live</strong> on the entity → it only carried <code>state: docked</code>, no clean-time. A cheap dead end.</li>
+      <li><strong>query</strong> <code>{ contains: "q5" }</code> → surfaces 34 related entities, including the <code>last_clean_end</code> sensor. Fuzzy cache search is the workhorse for navigating without documentation.</li>
+      <li><strong>fetch_live</strong> on that sensor → confirms the cached value is still current.</li>
+    </ol>
+    <p>Broad query to find the handle, narrow live fetch to trust the value. The same shape answers &ldquo;how much did I spend on food in May?&rdquo; (one <code>sum</code> aggregate over the cache) and &ldquo;turn off the kitchen lights&rdquo; (one <code>invoke_action</code> with an area selector).</p>
+  </section>
+
+  <hr class="div">
+
+  <!-- 5 -->
+  <section id="cache">
+    <h2 class="sec">The speed &amp; freshness model</h2>
+    <h3 class="head">Cache-first, live-on-demand — and the system makes you <em>choose</em>.</h3>
+    <p>Connectors sync each source into local Postgres on a cadence; agents read <strong>that store</strong>, never the provider API on the hot path. <strong>The gateway <em>is</em> the cache</strong> — there is no Redis, no second tier. Postgres, indexed and projected, is fast enough.</p>
+    <div class="grid-2">
+      <div class="call key" style="margin:8px 0;">
+        <p class="lab">1 · Cache-first</p>
+        <p><code>query</code> and <code>get_record</code> are <strong>always cache-only and instant</strong>. They support filters, the operators <code>eq / neq / gt / gte / lt / lte / in / contains</code>, and <strong>server-side aggregation</strong> (<code>count / sum / avg / min / max</code> with optional <code>groupBy</code>) — so &ldquo;spend in May&rdquo; is one summed number, not a thousand rows pulled to the agent.</p>
+      </div>
+      <div class="call floor" style="margin:8px 0;">
+        <p class="lab">2 · Live on demand</p>
+        <p>Cache can be stale. <code>fetch_live</code> is the explicit escape hatch when freshness matters. <code>describe_context</code> exposes each sector&rsquo;s <code>last_synced_at</code>, so the agent decides — per question — whether &ldquo;fast&rdquo; or &ldquo;true&rdquo; wins. The tradeoff is surfaced, never hidden.</p>
+      </div>
+    </div>
+    <p>Freshness is <strong>connector-declared policy, not code</strong>. Each connector picks a <code>SyncPolicy.mode</code> — <code>push</code> (subscribe; e.g. Home Assistant streams over a WebSocket), <code>poll</code> (a cadence; e.g. SimpleFIN, Whoop), or <code>on_demand</code> — and one generic scheduler honors all three. Every sync mode stamps <code>last_synced_at</code>, so the freshness signal is honest whether the data arrived by poll, push, or webhook.</p>
+    <div class="call floor">
+      <p class="lab">Footprint — bounded vs. unbounded</p>
+      <p><strong>Bounded</strong> sources (finance, home, calendar, contacts, health) cache <strong>every row in full</strong>. <strong>Unbounded</strong> sources (mail, later Drive/Notion) cache only the <strong>envelope</strong> — sender, subject, snippet, dates, labels — so <code>query</code> stays instant and bounded; the <strong>body + attachments are fetched on demand</strong> via <code>fetch_live</code>, never stored. The connector picks its footprint; the sync engine is identical either way.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 6 -->
+  <section id="fetchlive">
+    <h2 class="sec">The live path</h2>
+    <h3 class="head">How <code>fetch_live</code> works — one verb, two modes.</h3>
+    <p>The agent never talks to a provider directly — it has no vendor credential and no vendor endpoint, only our seven tools. So <strong>we fetch and hand back</strong>. <em>What</em> to fetch the agent learned from the cache (a record&rsquo;s <code>id</code>, or a sector&rsquo;s staleness); the fetch itself is ours.</p>
+    <div class="grid-2">
+      <div class="card">
+        <div class="num">mode: record</div>
+        <h4>Per-record live drill</h4>
+        <p><code>fetch_live({ id })</code>. We resolve that cached row back to <em>its own</em> originating connection, call that source live, and return the <strong>raw provider payload</strong> — the source&rsquo;s native shape, not our flattened columns. If the source says the object is gone, <code>record</code> is <code>null</code> and the cached row is tombstoned to match.</p>
+      </div>
+      <div class="card">
+        <div class="num">mode: sync</div>
+        <h4>Sector sync-now</h4>
+        <p><code>fetch_live</code> with no id. We fan a refresh out to every active connection in the sector and wait up to <strong>30 s</strong>, skipping push-mode connections (already live). <code>timed_out: true</code> means we stopped <em>waiting</em> — not that the sync was cancelled; it continues in the background, so the agent re-checks <code>last_synced_at</code>.</p>
+      </div>
+    </div>
+    <p>The two modes return different shapes on purpose. A drill returns the source&rsquo;s native blob (that&rsquo;s why a TV entity comes back with <code>app_id</code>, <code>supported_features</code>, an <code>entity_picture</code> proxy token — Home Assistant&rsquo;s own attributes, not our row); a sync-now returns <code>{ synced, timed_out, last_synced_at }</code>. Typed errors keep it honest: an absent connection or unknown id is a <code>NotFoundError</code> (REST 404); a source that can&rsquo;t serve right now (e.g. the HA socket is down) is a <code>FetchLiveUnavailableError</code> (REST 502). Live fetches for footprint-limited sectors are <strong>never stored</strong>.</p>
+    <pre><span class="c">// the per-record drill: cache finds the id → we call the source → raw payload back</span>
+<span class="k">type</span> FetchLiveResult =
+  | { sector; mode: <span class="s">"sync"</span>;   synced; timed_out; last_synced_at; errors? }
+  | { sector; mode: <span class="s">"record"</span>; id; record }  <span class="c">// record: raw payload | null = gone</span></pre>
+  </section>
+
+  <hr class="div">
+
+  <!-- 7 -->
+  <section id="actions">
+    <h2 class="sec">Acting on the world</h2>
+    <h3 class="head">The action path — the agent chooses <em>what</em>; we do every byte of <em>how</em>.</h3>
+    <p>The agent does <strong>not</strong> know the catalog ahead of time, and we do <strong>not</strong> pick the action for it. It&rsquo;s the read pattern, mirrored: <code>list_actions</code> to discover, <code>invoke_action</code> to do.</p>
+    <ol class="body">
+      <li><strong>list_actions</strong> — we serve the catalog <strong>from the cache</strong>, never a live poll. For a simple connector it&rsquo;s a static list; for Home Assistant it&rsquo;s the <strong>dynamic entity&times;service join</strong> (every controllable entity &times; the services it supports, with admin/system services denylisted). Each <code>ActionSpec</code> carries the action <strong>id</strong> (sector-namespaced, e.g. <code>home.light.turn_off</code>), its <strong>params</strong>, and the <strong>target</strong> it needs.</li>
+      <li><strong>invoke_action(id, params)</strong> — the agent hands us the chosen id + a target; we do the rest deterministically: grant-check the sector → resolve the active connection + its token → the connector resolves the <strong>selector</strong> (<code>{ area: "Kitchen" }</code> → the concrete <code>light.*</code> set, against the cache, <em>server-side, no LLM</em>) → fire the <strong>single</strong> live dispatch → async targeted re-sync + async audit.</li>
+    </ol>
+    <p>So &ldquo;the kitchen light&rdquo; is <strong>one call, not query-then-act</strong>, and one call turning off eight bulbs is us fanning out a cached area membership — not the agent enumerating entities. Two ways to target: an explicit <code>entity_id</code> the agent got from a <code>query</code>, or a structured <code>{ area / domain / name }</code> selector we expand.</p>
+    <div class="call key">
+      <p class="lab">The single dispatch has no retry — on purpose</p>
+      <p>The connector fires exactly one <code>call_service</code> and does <strong>not</strong> retry. For a real-world actuator (starting a car), blind auto-retry is dangerous, so an ambiguous downstream result surfaces as <code>{ ok: false }</code> rather than being hammered. The action returns immediately; the push stream (or an optimistic write) reconciles cached state off the hot path. The honest floor: that one dispatch is bounded by the source&rsquo;s own latency; everything around it is instant.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 8 -->
+  <section id="engine">
+    <h2 class="sec">Under the hood</h2>
+    <h3 class="head">Inside the engine — the layers a call passes through.</h3>
+
+    <p><strong>Layer 0 · Transport &amp; session.</strong> Locally, MCP runs over <strong>stdio</strong> — a persistent pipe, no auth, operating as the seeded local user. Remotely, it&rsquo;s MCP over <strong>Streamable HTTP</strong>: a stateful session (the <code>Mcp-Session-Id</code> handshake) and a per-agent <strong>scoped bearer key</strong> (only its SHA-256 is stored). A &ldquo;Missing or invalid Mcp-Session-Id&rdquo; is a transport-layer error one level <em>below</em> any gateway logic — the fix is re-running the handshake, not retrying the call.</p>
+
+    <p><strong>Layer 1 · The grant check is free.</strong> An <code>AuthContext</code> &mdash; <code>{ userId, agentId, grantedSectors }</code> &mdash; is resolved <strong>once per session</strong> into an in-memory <code>Set</code>. Every call does <code>assertSector</code> → <code>grantedSectors.has(sector)</code>: an O(1) membership check that throws <code>AccessDenied</code> <strong>before a single byte of SQL runs</strong>. No DB round-trip, ever. Default-deny: an empty grant set means the agent connects but every call denies.</p>
+
+    <p><strong>Layer 2 · <code>query</code> compiles to parameterized SQL.</strong> Per call: resolve sector → table → validate every <code>where</code>/<code>select</code>/<code>orderBy</code> field against the published <code>REGISTRY</code> → map operators through a <strong>hardcoded whitelist</strong> (the agent&rsquo;s operator string is never interpolated) → bind every value as a parameter. Two clauses are appended to <em>every</em> statement, non-negotiable: <code>user_id = $n</code> (you can never reach another user&rsquo;s rows) and <code>deleted_at is null</code> (tombstoned rows never serve). It sorts by the object&rsquo;s declared <code>primaryTime desc, id asc</code> — which maps exactly onto the generic <code>(user_id, connection_id, primaryTime)</code> index, so a default query is an index scan, projected, capped. It never accidentally sorts a full table.</p>
+
+    <div class="call key">
+      <p class="lab">A detail that signals the discipline</p>
+      <p>Monetary aggregates (<code>sum</code>/<code>avg</code>) return a Postgres <code>numeric</code> as a <strong>string</strong>, not a JSON number — serializing money through a float would round it. <code>count</code> returns a real number. Two return types from one tool, deliberately, to keep decimals exact.</p>
+    </div>
+
+    <p><strong>Layer 3 · The write path does more.</strong> <code>invoke_action</code> resolves the target (selector → concrete entities, cached, server-side), validates against the action&rsquo;s spec, checks the domain grant, dispatches once, and logs asynchronously. <strong>Audit is the only oversight</strong>: every read and action is logged off the response hot path (fire-and-forget) with the redacted <code>args</code> (a central key-denylist scrub) — <strong>detective, never preventive</strong>. It never blocks and never adds latency.</p>
+  </section>
+
+  <hr class="div">
+
+  <!-- 9 -->
+  <section id="connector">
+    <h2 class="sec">Where the vendor knowledge lives</h2>
+    <h3 class="head">The connector contract — one file per source, behind one interface.</h3>
+    <p>This is the answer to <em>&ldquo;for each connection type, do we know exactly how to act and live-fetch via its API/SDK?&rdquo;</em> &mdash; <strong>yes, and it&rsquo;s quarantined in one place.</strong> Every source-specific &ldquo;how&rdquo; — auth, the protocol, the dispatch — lives in a single <code>Connector</code> implementation and <strong>nowhere else</strong>. The seven primitives, the edges, grants, audit, the query engine are 100% source-agnostic and call this uniform interface.</p>
+    <pre><span class="k">interface</span> <span class="f">Connector</span> {
+  <span class="k">readonly</span> provider, sector, objectType;
+  <span class="k">readonly</span> policy:  SyncPolicy;        <span class="c">// push | poll(cadence) | on_demand</span>
+  <span class="k">readonly</span> actions: ActionSpec[];        <span class="c">// [] = read-only</span>
+  listActions?(ctx, filter):  ActionSpec[];   <span class="c">// optional DYNAMIC catalog (HA)</span>
+  sync(ctx):                  AsyncIterable&lt;RawRecord&gt;;  <span class="c">// pull the data</span>
+  fetchRecordLive?(ctx, id):  unknown;        <span class="c">// the live drill (optional)</span>
+  decodePush?(rawBody):       RawRecord[];     <span class="c">// webhook decoder (optional)</span>
+  normalize(raw):             TNormalized;     <span class="c">// vendor shape → our columns</span>
+  strongKeys(raw):            Record&lt;string,string&gt;;     <span class="c">// dedup identity</span>
+  execute(actionId, params, ctx): ActionResult;  <span class="c">// perform the action</span>
+}</pre>
+    <p>A new source is: implement this once + add a <code>REGISTRY</code> entry, and all seven tools light up. Four precisions worth holding:</p>
+    <ul>
+      <li><strong>&ldquo;API/SDK&rdquo; is whatever the source speaks, behind one wrapper.</strong> Home Assistant is a hand-built <strong>WebSocket</strong> client; SimpleFIN, Plaid, Google, Microsoft, Whoop are <strong>REST over HTTP</strong> (+ OAuth); Gmail is <strong>IMAP</strong>. All collapse to the same shape.</li>
+      <li><strong>Only sources that can act declare actions.</strong> Today Home Assistant is the only actor (its catalog is the dynamic <code>listActions</code> join). The rest — finance, mail, calendar, contacts, health — are read-only: <code>actions: []</code> and <code>execute()</code> throws. &ldquo;We know how to act&rdquo; is true <em>per source</em>, only where the source supports it.</li>
+      <li><strong>The live drill and the push decoder are optional.</strong> A source implements <code>fetchRecordLive</code> only if it has one (HA live state; mail body-on-demand); a push source implements <code>decodePush</code>; a bounded poll source skips both.</li>
+      <li><strong>Capability is bounded by the credential&rsquo;s own scopes</strong> — we never exceed the source grant. Connectors are hand-built in V0, but against a frozen contract + a <strong>conformance harness</strong> that every connector (and future agent-authored ones) must pass.</li>
+    </ul>
+    <div class="call key">
+      <p class="lab">In one sentence</p>
+      <p>For each connection type we encapsulate exactly how to sync, normalize, and — where the source + credential allow — act and live-fetch, behind one uniform interface. The agent sees none of it; it sees the catalog and schema we project from it.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 10 -->
+  <section id="fast">
+    <h2 class="sec">The mechanics of speed</h2>
+    <h3 class="head">Why it&rsquo;s fast — the moves that remove the latency.</h3>
+    <table class="tbl">
+      <thead><tr><th>Move</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td>The cache <em>is</em> the gateway (local Postgres)</td><td>Reads never touch upstream; the discovery tax is pre-paid during sync.</td></tr>
+        <tr><td><code>(user_id, connection_id, primaryTime)</code> index + default sort</td><td>A default read is an index scan, not a full-table sort.</td></tr>
+        <tr><td>Grant = in-memory <code>Set.has</code>, once per session</td><td>Zero-latency authorization, before any SQL.</td></tr>
+        <tr><td>Schema &amp; <code>describe_context</code> cached in memory</td><td>Discovery answers in milliseconds.</td></tr>
+        <tr><td>Push (WebSocket) keeps the cache continuously current</td><td>Reads don&rsquo;t wait for the source to be polled.</td></tr>
+        <tr><td>Server-side aggregation</td><td>&ldquo;May food spend&rdquo; is one <code>sum</code> in Postgres, not N rows shipped to the agent.</td></tr>
+        <tr><td>Actions: catalog from cache, only the dispatch is live, re-sync async</td><td>One-shot acting; reconciliation off the hot path.</td></tr>
+      </tbody>
+    </table>
+    <div class="call floor">
+      <p class="lab">The honest floor</p>
+      <p>The one live dispatch in an action, and any <code>fetch_live</code>, are bounded by the source — we can&rsquo;t beat the device&rsquo;s own latency. Everything wrapped around them is local-Postgres-and-RAM fast. That&rsquo;s the bet, stated plainly.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 11 -->
+  <section id="advantage">
+    <h2 class="sec">The advantage</h2>
+    <h3 class="head">A gateway agent vs. a raw-API agent — same model, same questions.</h3>
+    <p>A raw agent re-pays a <strong>discovery tax</strong> on <em>every</em> cold question — enumerate, filter, check state, check capability — that the gateway pre-paid once. Same answers, fewer round-trips, fewer tokens. Read that as the <strong>floor</strong>: zero-intelligence normalize-and-serve already wins. The memory/context layer (chapter 2) is the <strong>moat</strong> on top.</p>
+    <div class="call key">
+      <p class="lab">What the gateway carries vs. what the agent still does</p>
+      <p>The gateway eliminates the plumbing — auth, transport, pagination, rate limits, schema discovery (the tedious 80%). It does <strong>not</strong> do the judgment: classifying an uncategorized transaction by merchant, reasoning about which of two timestamps to trust, deciding whether the data actually answers the question. The friction moves off <em>access</em> and onto the genuinely interesting part.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 12 -->
+  <section id="not">
+    <h2 class="sec">The boundaries</h2>
+    <h3 class="head">What it deliberately is <em>not</em>.</h3>
+    <div class="grid-2">
+      <div class="call not" style="margin:8px 0;">
+        <p class="lab">No LLM on our side</p>
+        <p>The agent composes queries and actions; we validate and execute <strong>deterministically</strong>. Selector resolution, grant checks, SQL — all mechanical. The intelligence lives in the agent, never in the gateway.</p>
+      </div>
+      <div class="call not" style="margin:8px 0;">
+        <p class="lab">A faithful cache, not a derived store</p>
+        <p>We authenticate, normalize, store, serve, and dispatch. We never write <strong>derived</strong> data into the store (that&rsquo;s the chapter-2 memory layer). Actions go <em>out</em> to the source, then a targeted re-sync reflects the result — we never fabricate data.</p>
+      </div>
+      <div class="call not" style="margin:8px 0;">
+        <p class="lab">No cross-domain correlation</p>
+        <p>Data is partitioned by sector with <strong>no joins between domains</strong>. To correlate spending with home activity, an agent fans out two queries and stitches them itself. The boundary is deliberate.</p>
+      </div>
+      <div class="call not" style="margin:8px 0;">
+        <p class="lab">Not the account-linking UX</p>
+        <p>The gateway <strong>consumes established credentials</strong> — you link accounts at the source (a bank in SimpleFIN, a token in Home Assistant, an OAuth consent) and hand us the result. We add portability, one surface, and an audit trail on top; we never strip a capability the credential already had.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- 13 -->
+  <section id="connect">
+    <h2 class="sec">Using it</h2>
+    <h3 class="head">Point an agent at it.</h3>
+    <p>Two paths, same seven tools, same domain grant:</p>
+    <ul>
+      <li><strong>Local (stdio)</strong> — the harness spawns the gateway over a stdin/stdout pipe; no auth, operating as the seeded local user. The reliable default for a local agent.</li>
+      <li><strong>Remote (HTTP + bearer)</strong> — enable the MCP edge (<code>MCP_HTTP_PORT</code>, default <code>8788</code>) and point any harness at <code>http://localhost:8788/mcp</code> with a minted <strong>bearer key</strong> in the <code>Authorization</code> header. Mint the key + choose its sectors in the Console.</li>
+    </ul>
+    <pre><span class="c">// an MCP client config pointing at the remote edge</span>
+{
+  <span class="s">"mcpServers"</span>: {
+    <span class="s">"pci-gateway"</span>: {
+      <span class="s">"type"</span>: <span class="s">"http"</span>,
+      <span class="s">"url"</span>:  <span class="s">"http://localhost:8788/mcp"</span>,
+      <span class="s">"headers"</span>: { <span class="s">"Authorization"</span>: <span class="s">"Bearer &lt;your-minted-key&gt;"</span> }
+    }
+  }
+}</pre>
+    <p>The grant the agent gets is <strong>domain-level</strong>: a granted sector covers read <em>and</em> act across every provider in that domain. One scope, resolved once, checked in nanoseconds per call. Swap the harness and the context, capabilities, permission, and audit all come along — that&rsquo;s the third mantra in practice.</p>
+  </section>
+
+  </main>
+</div>
+</div>
+
+<footer>
+  <div class="wrap">
+    Postern — connect the sectors of your life once, expose them to any agent through one neutral surface.<br>
+    Grounded in the V0 engine (<code>src/core</code>, <code>src/connectors</code>, <code>src/mcp</code>). For architecture detail see <a href="../CLAUDE.md">CLAUDE.md</a> · the ADRs in <code>docs/specs/decisions/</code>.
+  </div>
+</footer>
+
+</body>
+</html>

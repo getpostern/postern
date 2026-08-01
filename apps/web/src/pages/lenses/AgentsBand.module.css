@@ -1,0 +1,254 @@
+/* WHAT AGENTS CAN DO — two lanes (CAN READ | CAN ACT). Ported from the finance/home lens band
+ * (K1-0 / 1AQ-0): the band-head small-caps + hairline + italic gloss, then two equal lanes split by
+ * a 1px rule. The read-lane agent dot carries the sector ink (--lens-ink, set on the lens root). */
+
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.headLabel {
+  flex-shrink: 0;
+  color: var(--color-ink);
+  font-family: var(--font-sc);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.hairline {
+  flex: 1 1 0;
+  height: 1px;
+  background: var(--color-ink-a22);
+}
+
+.headGloss {
+  flex-shrink: 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 16px;
+}
+
+.lanes {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+}
+
+.lane {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.laneDivider {
+  flex-shrink: 0;
+  width: 1px;
+  align-self: stretch;
+  background: var(--color-ink-a22);
+}
+
+.laneHead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.laneLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.laneCount {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.laneEmpty {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+/* CAN READ — one row per granting agent. */
+
+.agentRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.agentDot {
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--lens-ink, var(--color-faded));
+}
+
+.agentId {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.agentSeen {
+  flex-shrink: 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+/* `.agentSeenUnserved` IS DELETED (#106 §2a). It set the italic register for the sentence "last read
+   not served yet" — a whole treatment built to make our wire's shortfall read as a quiet fact. The
+   sentence is gone (the cell renders nothing when the value is not served), so the register has nothing
+   left to set. Do not re-add it: a new italic here would be a new sentence about us. */
+
+/* CAN ACT */
+
+.actList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 460px;
+}
+
+.actItem {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.actId {
+  flex-shrink: 0;
+  width: 196px;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.actDesc {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.actReadonly {
+  color: var(--color-ink-soft);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-style: italic;
+  line-height: 150%;
+  max-width: 420px;
+}
+
+/* The lane's one surviving footnote: the SERVED reason a catalog read failed (#106 §3). It was 11px —
+   the two footnotes that justified that size were our own apparatus (`invoke_action · …` and
+   `actions: [ ]`) and are deleted, and what is left is a sentence from the gateway that a person is
+   meant to read and act on. 13px is `--text-sm`, the smallest step the token scale carries and the
+   smallest body size drawn anywhere on the plate; below it there is no step, only invention. Mono
+   stays: these are the gate's own words, set the way this Console sets every other machine sentence. */
+.actFoot {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 17px;
+}
+
+/* The "…and more" line under a TRIMMED catalog (#58). Values read off the home lens's own overflow
+   line (`19P-0` / node 1FL-0, get_computed_styles) — body 13px italic in faded ink — so the sentence
+   that admits truncation sits in the treatment the plate already gives an overflow note. */
+.actMore {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 16px;
+  max-width: 460px;
+}
+
+/* The narrowing that ANSWERS truncation (the answer is a narrower filter, never a bigger limit).
+   No plate draws this control, so every value is reused verbatim from a treatment already shipping
+   in this repo: the input is the inspector's filter box (`InspectorPage.module.css .filter`), the
+   clear control is the inspector's pager link (`.pagerBtn`), and the width bound is `.actList`'s. */
+.actNarrow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 460px;
+}
+
+.actNarrowLabel {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.actNarrowInput {
+  width: 100%;
+  height: 40px;
+  box-sizing: border-box;
+  padding-inline: 14px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.actNarrowClear {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  cursor: pointer;
+}
+.actNarrowClear:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+  .lanes {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .laneDivider {
+    display: none;
+  }
+}

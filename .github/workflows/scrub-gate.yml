@@ -1,0 +1,48 @@
+name: scrub-gate
+
+# The standing hygiene gate on this repository's content.
+#
+# TWO CHECKS, both mechanical, both over the whole tree:
+#
+#   scrub-shapes  no line in this repository identifies one particular person's machine, network or
+#                 account. It matches SHAPES — home-directory paths, tailnet names and ids, bare
+#                 UUIDs outside fixtures, links into the private upstream — and carries no real
+#                 value of any kind, which is exactly why it can live in a public repository.
+#   link-check    every relative link in the documentation resolves to a file that actually ships.
+#                 This tree is a filtered snapshot of a larger private one, so a document can easily
+#                 survive the filter while the document it links to does not.
+#
+# Neither check needs a secret, a token or a service, so both run on forks and on pull requests from
+# them — which is the point: the gate should be hardest to bypass exactly when the change comes from
+# someone the maintainers have never met.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Weekly, so the gate keeps a heartbeat even through a quiet month — a check nobody has seen run
+  # in a while is a check nobody knows is broken.
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scrub-gate-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  scrub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # Both scripts self-report the size of their own harvest and exit 2 — not 0 — when they find
+      # nothing to scan. A scanner that silently walks an empty tree passes forever.
+      - name: Shape scan (no line names one particular box)
+        run: bash .github/scripts/scrub-shapes.sh .
+
+      - name: Link check (every relative link resolves)
+        run: bash .github/scripts/link-check.sh .

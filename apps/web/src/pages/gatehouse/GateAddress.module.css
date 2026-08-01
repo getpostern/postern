@@ -1,0 +1,49 @@
+/* Gate-address card — ported from `1Y-0`. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  width: 322px;
+  max-width: 100%;
+  padding: 18px 20px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-lg);
+}
+
+/* The label is the only child now that the seal check is gone (§18.2), so there is nothing to space
+ * apart — `space-between` on a single child would centre nothing and mislead the next reader. */
+.head {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.caption {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 140%;
+}
+
+/* The Gatehouse's inline-link treatment, reused verbatim from `GatehousePage.module.css .agentsLink`
+ * (the agents clause in the verdict sentence) — the same page, the same destination, so it must not
+ * become a second look. Nothing here declares a focus ring: the Console has exactly ONE
+ * `:focus-visible` rule, in `styles/base.css` (#69), and re-declaring it is how it drifts. */
+.link {
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-rule-strong);
+}
+.link:hover {
+  border-bottom-color: var(--color-seal);
+  color: var(--color-seal);
+}

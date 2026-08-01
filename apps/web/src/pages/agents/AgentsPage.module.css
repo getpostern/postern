@@ -1,0 +1,170 @@
+/* Agents register — values ported from Paper 2IG-0. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding-bottom: 32px;
+}
+
+/* Masthead right block: the Mint button + active-keys count. */
+.mintCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.mintBtn {
+  padding: 11px 20px;
+  background: var(--color-seal);
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 18px;
+}
+
+.activeCount {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* The register. */
+.register {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ordinal {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.agentCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.agentName {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 18px;
+}
+.agentName:hover {
+  color: var(--color-seal);
+}
+
+.agentSub {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.grantEvery {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+.grantNone {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+.grantChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Passage — degraded honestly. */
+.passageAt {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* #106 §3's floor, applied where the issue names it: 12px + italic + faded compounded into "basically
+ * unreadable", and this cell is one of the two the operator was reading. 13px/18px is the treatment
+ * `.passageNote` below already uses for the same column's small print — reused rather than invented. */
+.passageNS {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* The column's lower-bound footnote — the ledger page's small-print treatment (`LedgerPage.module.css`
+ * .ceiling / .exportNote): same kind of fact about the same trail, so it reads as the same apparatus. */
+.passageNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+  max-width: 720px;
+}
+
+/* Key actions. */
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.actionBtn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.actionSep {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+/* Load error. */
+.loadError {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+.retryBtn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+}

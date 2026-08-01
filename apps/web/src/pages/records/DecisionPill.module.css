@@ -1,0 +1,38 @@
+/* The decision pill — the THREE states (#78). Admitted is quiet (no dot, faded); denied carries the
+ * seal; errored carries attention (marigold). Ported from the Decision column of `2QU-0`. */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+.alignRight {
+  justify-content: flex-end;
+  width: 100%;
+}
+.admitted {
+  color: var(--color-faded);
+}
+.denied {
+  color: var(--color-seal);
+}
+.errored {
+  color: var(--state-attention);
+}
+.dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+}
+.dotDenied {
+  background: var(--color-seal);
+}
+.dotErrored {
+  background: var(--state-attention);
+}

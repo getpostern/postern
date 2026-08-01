@@ -1,0 +1,41 @@
+/* NavMark / PosternMark.
+ *
+ * Only layout and typography live here. The marks' own colours are literal hexes inside the SVGs
+ * (they are accepted brand vectors — see the header of NavMark.tsx), so this file must never set a
+ * fill or a stroke. */
+
+.mark {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* The brand lockup — app file node 3-0 (the canonical nav rail's Brand frame). */
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 8px;
+}
+
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.wordmarkKicker {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.wordmarkName {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  line-height: 100%;
+}

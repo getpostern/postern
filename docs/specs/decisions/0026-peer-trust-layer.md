@@ -1,0 +1,26 @@
+# ADR 0026 — Peer trust layer: person-to-person agent access, enforced by the gateway (direction)
+
+**Status:** Direction accepted · **Date:** 2026-07-12 · **Scope:** POST-BETA — nothing here enters the beta; this ADR pins the thesis, the shape, and the constraints so later specs don't re-derive them. · **Context:** agent-to-agent *protocols* exist (MCP, Google A2A), but nobody owns the authorization seam between two PEOPLE's lives — "my agent asks your agent when you're free" has no trust infrastructure anywhere in the ecosystem.
+
+## Thesis (why the gateway, first principles)
+
+The trust boundary between two people's agents cannot live in the agents: an LLM negotiating what to reveal is exactly the component you cannot trust with enforcement. The boundary must be deterministic infrastructure each person OWNS. That is already PCG's shape — no-LLM on our side, default-deny grants, deterministic validation, async audit — which means the gateway already IS a trust layer for your own agents; peer trust is the generalization from "I grant my agents" to "I grant your agent." Mechanical proof of fit: a scoped bearer key granted only `calendar`, handed to a friend, works against the remote MCP edge TODAY with zero data-plane changes. The entire delta is control-plane: scoping, identity, consent lifecycle, reachability.
+
+## Decision
+
+1. **A SECOND grant class — "shares" — for peers; own-agent grants stay untouched.** The locked domain-level-only permission model (CLAUDE.md) was decided for the owner's own agents, where the trust calculus is "I trust myself" — it stays locked there. Peers get **shares**: named, READ-ONLY, deterministically FILTERED projections of a sector — e.g. a calendar share serving only start/end/busy (no titles/descriptions/attendees), a finance share filtered to one account, a contacts share of one group. A share is a projection applied at read time over the faithful cache — column masks + row predicates validated against the REGISTRY, same determinism discipline as `query()` — NOT derived data; the faithful-cache invariant holds.
+2. **Peers are read-only. No actions, period, in this chapter.** "Your agent toggles my lights" is *delegation* — a distinct, later trust chapter with its own consent semantics. A share can never reach `invoke_action`.
+3. **Identity v1 = out-of-band invite exchange.** An invite link the owner hands to a person they already know (the SimpleFIN claim-URL pattern; consistent with "the gateway consumes established credentials — it is not the identity UX"): mint → claim once → the claim binds a peer record (display name, claimed-at, key hash) → revocable like any grant. Cryptographic identity / directories / gateway-to-gateway mutual auth are explicitly LATER — do not gate v1 on PKI.
+4. **Reachability is tiered, and the whole feature is post-beta BY CONSTRUCTION.** The beta promise is zero public exposure (ADR 0024/0025); a peer's agent needs a path in. Tiers: (a) **tailnet node-sharing** (fits ADR 0024; the technical-friends tier), (b) a **relay** — the owner's box dials OUT to the relay, peers connect to the relay, the box stays invisible, (c) Funnel/public bind as an explicit informed opt-in. The share machinery must be transport-agnostic across all three.
+5. **Honest guarantees only.** Access control bounds ACCESS, not RETENTION — once a peer's agent reads a projection, it is copied and cannot be unread. The trust layer's true guarantees: least-privilege in (the filtered projection), a complete audit of what left (per-peer, per-call, already-existing machinery), and instant revocation of the tap. Marketing/docs must never imply more (no "your data stays yours after sharing" claims).
+6. **The wire surface does not fork.** A peer's agent connects over the SAME remote MCP/REST edge with a scoped bearer; shares resolve in the same once-per-session grant path (a share resolves to its projection instead of a whole sector). No second protocol, no peer-specific endpoints beyond the invite/claim lifecycle routes.
+7. **This is the first feature with NETWORK EFFECTS, and that constrains the design.** It only works if the other person also runs a gateway, so anything that raises the cost of *being the peer* — a second protocol, a required account, a proprietary client — attacks the feature at its weakest point. Whatever else changes, the peer side must stay a bearer key against a standard edge.
+
+## What must actually be built (the spec menu, when its time comes)
+
+Share definitions (control-plane table: peer, sector, column mask, row predicate, expiry) · the deterministic projection layer in core reads · invite mint/claim/revoke lifecycle routes + Console surface (UI-first: create a share, see who holds what, revoke) · per-peer rate limiting on the edge (a third-party key hitting your box) · audit surfacing per peer ("what has X's agent read this month") · the canonical first demo: free/busy scheduling between two gateways.
+
+## Consequences
+
+- The beta scope is UNCHANGED — this ADR creates no beta work; it is a post-beta chapter, alongside the context layer.
+- The permission section of CLAUDE.md stays true as written (domain-level only) until the share grant class ships; the spec that builds shares carries the docs impact.

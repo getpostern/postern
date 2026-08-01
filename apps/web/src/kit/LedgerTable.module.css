@@ -1,0 +1,110 @@
+/* LedgerTable — the flex "table" every list surface composes from. Ported from the ledger `2QU-0`
+ * (header `2WW-0`, row `2X3-0`). Accessibility is structural (#69): sort headers are <button>s with
+ * aria-sort; drill rows are keyboard-activatable. Wide content scrolls inside `.scroll`, so the page
+ * body never scrolls sideways. */
+
+/* `overflow-x: auto` clips BOTH axes — per CSS Overflow 3 the other axis' `visible` computes to
+ * `auto` — and an outline never contributes to scrollable overflow, so scrolling can never reveal
+ * one. The global ring is 2px at 3px offset (base.css), i.e. it reaches exactly 5px past the border
+ * box; with no room inside the clip box the sort-header button's ring and the drill row's ring are
+ * clipped away, and the two focusable things this primitive exists to expose have no visible focus.
+ *
+ * The 5px of room is OUTSET, not inset: padding grows the box and the equal negative margin pulls
+ * it back, so the content box lands exactly where it did before. `overflow-clip-margin` would be
+ * simpler but applies only to `overflow: clip`, never to `auto`. Plain `padding: 5px` was tried
+ * first and rejected at review — under `box-sizing: border-box` it narrows `.head`'s full-width
+ * border-bottom by 10px on all eight LedgerTable surfaces, i.e. it re-draws a ported artboard
+ * (`2QU-0`) to buy a focus ring. The ring is NEVER re-declared here — base.css owns it (#69,
+ * ruled 2026-07-25). */
+.scroll {
+  width: calc(100% + 10px);
+  margin: -5px;
+  overflow-x: auto;
+  padding: 5px;
+}
+
+.table {
+  min-width: 100%;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-ink-a40);
+}
+
+.headCell,
+.sortBtn {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.headCell {
+  flex-shrink: 0;
+}
+
+.sortBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.caret {
+  font-size: 9px;
+  line-height: 1;
+}
+
+.flexCell {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.alignRight {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-ink-a22);
+  text-align: left;
+  color: inherit;
+}
+
+.clickable {
+  border-radius: var(--radius-sm);
+}
+.clickable:hover {
+  background: var(--color-paper-raised);
+}
+
+.cell {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding-right: 12px;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  padding-top: 16px;
+}

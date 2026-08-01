@@ -1,0 +1,600 @@
+/* The connect group — Add-a-source (1WR-0) + the nine connect screens (§2). Ported from Paper via
+ * get_jsx; every value is a token. The nav rail, masthead kicker/verdict, and section rules come
+ * from the frozen shell/kit; only the connect-specific surfaces are styled here. No raw hex; the one
+ * :focus-visible ring is inherited from base.css. */
+
+/* ---------- page frame (the shell already supplies the 40/48 padding + 1106 cap) ---------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.pageAdd {
+  gap: var(--space-7); /* 48-ish rhythm; design uses 40 between add-source sections */
+}
+.pageConnect {
+  gap: var(--space-6);
+}
+
+/* ---------- Add-a-source: the provider grid ---------- */
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+/* The last two groups (Hosted link · On your device) sit side by side. */
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  width: 100%;
+}
+.groupSplit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-7);
+  width: 100%;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+.groupCol {
+  flex: 1 1 0;
+  min-width: 380px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 14px;
+  width: 256px;
+  padding: 20px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-lg);
+  color: var(--color-ink);
+}
+.card:hover {
+  border-color: var(--color-ink-a40);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.cardTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+}
+.cardHeadSpacer {
+  flex: 1 1 0;
+}
+.cardArrow {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 18px;
+  color: var(--color-seal);
+}
+/* Connection-aware (#55): a connected source shows a quiet fern marker, not the seal arrow. */
+.cardConnected {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 14px;
+  color: var(--state-ok);
+}
+.cardConnectedDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--state-ok);
+  flex-shrink: 0;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cardTitle {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: 22px;
+  color: var(--color-ink);
+}
+.cardSub {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 16px;
+  color: var(--color-faded);
+}
+
+/* The card's sector run — SPECIMENS, never anonymous colour squares (#95 §1, build-notes §17.2).
+ * The six-pixel per-sector-ink swatches that used to live here are DELETED, rules and all: a sector
+ * ink in a bare square carries no legend, and this was the last surface in the Console that named a
+ * sector without its drawing. Do not bring the ink tokens back into this file — the specimens carry
+ * their own hexes inside the vector, and `AddASource.test.tsx` scans this stylesheet for them.
+ * The gap (7px) and the mono name-run below are the plate's own values, unchanged.
+ *
+ * `flex-wrap` is the one addition the plate does not show, and it is load-bearing: the plate measured
+ * the 26-character name-run at 110px, but Courier Prime is a 0.6em monospace, so at 11px that run is
+ * ~172px of the 214px card interior. Three specimens plus their gaps cannot share that line at ANY
+ * chip size, so the run drops whole to a second line on the two three-sector cards instead of
+ * breaking mid-separator. Same treatment `.creates` already uses on the connect screen. */
+.cardSectors {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+/* The specimens stay one atomic run so a wrap never splits them; `aria-hidden` lives on this element
+ * in the TSX because the name-run beside it already says every sector out loud. */
+.cardSectorMarks {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.cardSectorRun {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 14px;
+  color: var(--color-faded);
+}
+
+/* ---------- Connect screen ---------- */
+
+.backLink {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--color-seal);
+  width: max-content;
+}
+
+.cxMasthead {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.kicker {
+  font-family: var(--font-sc);
+  font-size: var(--text-xs);
+  letter-spacing: 0.18em;
+  line-height: 14px;
+  text-transform: uppercase;
+  color: var(--color-faded);
+}
+.cxHeadRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.cxTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+}
+.cxNameCol {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.cxName {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-medium);
+  line-height: 1.04;
+  color: var(--color-ink);
+}
+.cxSub {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-style: italic;
+  line-height: 18px;
+  color: var(--color-faded);
+}
+
+.body {
+  display: flex;
+  align-items: flex-start;
+  gap: 56px;
+  padding-top: var(--space-2);
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* ---------- left column: steps at the source ---------- */
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  flex: 1 1 0;
+  min-width: 360px;
+}
+.stepsHeader {
+  font-family: var(--font-sc);
+  font-size: var(--text-sm);
+  letter-spacing: 0.16em;
+  line-height: 16px;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+.step {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+.stepNum {
+  flex-shrink: 0;
+  width: 26px;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--color-seal);
+}
+.stepText {
+  flex: 1 1 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+.stepTextFaded {
+  color: var(--color-faded);
+}
+/* The gateway-served redirect URI, now the kit Copyable ("pasted, never hand-typed" — #121). The
+ * box replaces the old inline `.stepRedirect` mono run; the wrapper only spaces it inside the
+ * step's text lane. */
+.stepRedirectBox {
+  margin-top: var(--space-2);
+}
+/* A wrong turn proven live (G1 walkthrough, #121), stated beside the step it belongs to. The #106
+ * §3 floor for a surviving notice: --text-sm, NOT italic, --color-faded (5.25:1 on paper — AA). */
+.stepWarn {
+  margin-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-faded);
+}
+/* The field-guide link (#136) — the one external anchor on a connect screen. Seal ink and a trailing
+ * arrow, exactly like every other link this Console draws (.backLink, .manageLink, "and N more →"),
+ * so nothing new has to be learned to recognise it. --text-sm, not italic: it is an aside under the
+ * steps, not a step and not a gloss (#106 §3's floor for a surviving notice). `max-content` keeps the
+ * hit area on the words rather than the whole column width; `max-width` lets it wrap at 375px
+ * instead of pushing the column wide. */
+.guideLink {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-seal);
+  width: max-content;
+  max-width: 100%;
+}
+.footnote {
+  padding-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--color-faded);
+}
+
+/* ---------- right card: the form / action ---------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  flex: 1 1 0;
+  min-width: 360px;
+  padding: 28px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-lg);
+}
+.formHeader {
+  font-family: var(--font-sc);
+  font-size: var(--text-sm);
+  letter-spacing: 0.16em;
+  line-height: 16px;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.fieldLabel {
+  font-family: var(--font-sc);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  line-height: 12px;
+  text-transform: uppercase;
+  color: var(--color-faded);
+}
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 18px;
+  color: var(--color-ink);
+}
+.input::placeholder {
+  color: var(--color-faded);
+}
+.inputMono {
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.inputError {
+  border-color: var(--color-seal);
+}
+.input:disabled {
+  color: var(--color-faded);
+  background: var(--color-paper);
+  cursor: not-allowed;
+}
+
+.submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: var(--color-seal);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: 18px;
+  color: var(--color-paper);
+  cursor: pointer;
+  width: 100%;
+}
+.submit:disabled {
+  background: var(--color-ink-a25);
+  color: var(--color-faded);
+  cursor: not-allowed;
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  flex-shrink: 0;
+  background: var(--color-ink-a22);
+}
+
+.creates {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.chipGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chipLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-style: italic;
+  line-height: 18px;
+  color: var(--color-ink);
+}
+.createsLine {
+  flex: 1 1 0;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 16px;
+  color: var(--color-faded);
+}
+
+/* ---------- intent gate (#55: reconnect requires an explicit acknowledgement) ---------- */
+
+.intentRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  color: var(--color-ink);
+}
+.intentRow input {
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: var(--color-seal);
+}
+.manageLink {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 18px;
+  color: var(--color-seal);
+  width: max-content;
+}
+
+/* ---------- device (Apple Health) ---------- */
+
+/* The device notices are the surviving ones on this screen, so they take #106 §3's floor: 13px and
+ * NOT italic. The diagnosis there was faded + italic + small compounding into "basically unreadable";
+ * --color-faded itself measures 5.25:1 on paper and stays. The plate's italic GLOSSES elsewhere in
+ * this file (.cxSub, .footnote, .fieldHint) are a different treatment and are untouched. */
+.secretNote {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 18px;
+  color: var(--color-faded);
+}
+
+/* `.deviceActionRow`, `.qr`, `.qrGlyph`, `.qrLabel` and `.deviceBtnCol` were DELETED with the fake QR
+ * placeholder and the disabled "Add the Postern Health shortcut" button (#106 §2b/§3). The 9px
+ * small-caps `.qrLabel` reading "not served" was the smallest type in the Console and captioned an
+ * affordance that does not exist. Do not re-add them to draw a shortcut nothing serves. */
+
+/* The ingest payload template (#27, step 4). The Apple Health artboard draws no payload block, so the
+ * treatment is the repo's existing one for a pasteable code object — `ConnectRecipes.module.css`
+ * `.recipe`/`.recipeCopy`, values mirrored rather than imported (a page group never reaches into
+ * another's module). The label matches `Copyable`'s label exactly, because this block is a sibling of
+ * the two Copyable fields above it and belongs in the same lane. */
+.payload {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.payloadLabel {
+  font-family: var(--font-sc);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.2em;
+  line-height: 12px;
+  text-transform: uppercase;
+  color: var(--color-faded);
+}
+.payloadBlock {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+.payloadBlock code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+  color: var(--color-ink);
+}
+.payloadCopy {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-sc);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.1em;
+  line-height: 12px;
+  text-transform: uppercase;
+  color: var(--color-seal);
+  /* No `cursor` and no focus ring here: base.css sets both on every `button`, globally. */
+}
+/* An always-visible field constraint (#96 §3) — beside the input, in the same faded voice as a
+   disabled control's reason. Not an error state: it never seals and never turns red. */
+.fieldHint {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--color-faded);
+}
+
+/* A disabled control carries its reason beside it, never a bare dim (build-notes §1.5). Not italic:
+ * #106 §3's floor for a surviving notice on a faded ground. */
+.disabledReason {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-faded);
+}
+.waiting {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-sc);
+  font-size: var(--text-sm);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-faded);
+}
+.waitingDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--state-idle);
+  flex-shrink: 0;
+}
+
+/* ---------- plaid hosted-link progress ---------- */
+
+.plaidLead {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+.bankRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-ink-a15);
+}
+.bankName {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink);
+}
+.bankMeta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-faded);
+}
+
+/* ---------- success / not-found ---------- */
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  cursor: pointer;
+  width: max-content;
+}
+
+@media (max-width: 768px) {
+  .body {
+    gap: var(--space-6);
+  }
+  .steps,
+  .form {
+    min-width: 100%;
+  }
+}

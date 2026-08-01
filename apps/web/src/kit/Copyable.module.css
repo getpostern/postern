@@ -1,0 +1,56 @@
+/* Copyable — a value in a bordered box with a Copy affordance. Ported from the gate-address field
+ * (`1Q-0`). Used for the gate address, an ingest URL, an agent id — identifiers stay mono. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+}
+
+.value {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.value[data-mono="true"] {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.copy {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  line-height: 12px;
+  text-transform: uppercase;
+}

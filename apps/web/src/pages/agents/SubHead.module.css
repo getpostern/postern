@@ -1,0 +1,15 @@
+/* SubHead — back-link + masthead. Ported from Paper 5KL-0/5US-0/5XS-0. */
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.back {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  align-self: flex-start;
+}

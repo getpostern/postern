@@ -1,0 +1,392 @@
+/* Sources — the all-sectors connections ledger (1FN-0 · FQ4-0). A header for the credential/app you'd
+ * remove to kill them all, with its connections nested. Values ported verbatim from Paper. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: var(--container-content);
+}
+
+/* ── masthead right block: the CTA + the count line under it ── */
+.mastheadRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.addSource {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 11px 20px;
+  background: var(--color-seal);
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: 18px;
+  text-decoration: none;
+}
+
+.count {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 16px;
+}
+.countNeed {
+  color: var(--color-seal);
+}
+
+/* ── the ledger table ── */
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+/* column geometry, shared by the head and every row */
+.marker {
+  flex-shrink: 0;
+  width: 46px;
+  display: flex;
+  justify-content: center;
+}
+.colCoverage {
+  flex-shrink: 0;
+  width: 150px;
+}
+.colCadence {
+  flex-shrink: 0;
+  width: 150px;
+}
+.colHeard {
+  flex-shrink: 0;
+  width: 96px;
+}
+.colManage {
+  flex-shrink: 0;
+  width: 130px;
+  display: flex;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* the small-caps column header row */
+.head {
+  display: flex;
+  align-items: center;
+  padding-bottom: 2px;
+}
+.headLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.12em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+.headName {
+  flex: 1 1 0%;
+}
+
+/* ── credential / app group header ── */
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The ARRIVAL (#112). "and N more →" used to land at the top of this page, so a reader who clicked a
+ * link about SimpleFIN's institutions arrived at a list of everything with no sign of where they came
+ * from. The group they were sent to lifts onto the raised paper ground — the SAME treatment
+ * `kit/LedgerTable.module.css` `.clickable:hover` already uses to mark the row a reader is pointing
+ * at, reused verbatim rather than a new colour, and a weight rather than a glow (build-notes §8).
+ *
+ * A class driven by the router, NOT `:target`: react-router navigates with `history.pushState`, whose
+ * effect on the document's target element differs across engines, so a `:target` rule would silently
+ * do nothing on some browsers — and nothing in jsdom, where no stylesheet is applied at all. */
+.arrived {
+  background: var(--color-paper-raised);
+  border-radius: var(--radius-sm);
+}
+.credHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-ink-a40);
+}
+.provIcon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.credTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.credName {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: 22px;
+}
+.credSub {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 14px;
+}
+.credSpacer {
+  flex: 1 1 0%;
+}
+.credMeta {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-style: italic;
+  line-height: 16px;
+}
+.credMetaDown {
+  color: var(--color-seal);
+}
+.dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+}
+.dotOk {
+  background: var(--state-ok);
+}
+.dotPartial {
+  background: var(--state-attention);
+}
+.dotDown {
+  background: var(--color-seal);
+}
+
+/* a credential-header text action (Reconnect / Remove / Add a bank / Edit app) */
+.credAction {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 16px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.credActionStrong {
+  font-weight: var(--weight-semibold);
+}
+.credActionSep {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 16px;
+}
+
+/* ── a connection row (nested, or a flat single) ── */
+.row {
+  display: flex;
+  align-items: center;
+  padding-block: 13px;
+  border-bottom: 1px solid var(--color-ink-a22);
+}
+.dash {
+  width: 7px;
+  height: 1px;
+  background: var(--color-ink-a40);
+  flex-shrink: 0;
+}
+.rowName {
+  flex: 1 1 0%;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 18px;
+}
+.cellCoverage {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 16px;
+}
+.cellCadence {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 16px;
+}
+.cellHeard {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 16px;
+}
+.cellAlarm {
+  color: var(--color-seal);
+}
+.manageLink {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 16px;
+  text-decoration: none;
+}
+.manageStrong {
+  font-weight: var(--weight-semibold);
+}
+
+/* a bank row's name cell carries the institution mark inline */
+.bankName {
+  flex: 1 1 0%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bankNameText {
+  flex: 0 0 auto;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 18px;
+}
+.bankMask {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 14px;
+}
+.bankMerged {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-style: italic;
+  line-height: 16px;
+}
+
+/* SimpleFIN's flat header carries the coverage cells itself (it is one connector, N orgs) */
+.flatHead {
+  display: flex;
+  align-items: center;
+  padding-block: 15px;
+  border-bottom: 1px solid var(--color-ink-a22);
+}
+.flatTitle {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 16px;
+}
+.flatName {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: var(--weight-semibold);
+  line-height: 20px;
+}
+
+/* SimpleFIN's institution coverage line */
+.institutions {
+  display: flex;
+  align-items: baseline;
+  padding-bottom: 14px;
+}
+.institutionsBody {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.institutionsList {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.institutionsNames {
+  color: var(--color-ink-soft);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 18px;
+}
+.institutionsMerged {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-style: italic;
+  line-height: 18px;
+}
+.institutionsBridge {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-style: italic;
+  line-height: 16px;
+}
+
+/* "Show the other N banks →" expander */
+.moreRow {
+  display: flex;
+  align-items: center;
+  padding-block: 12px;
+}
+.moreButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 16px;
+  cursor: pointer;
+}
+
+/* the banks-read failure standing in for the bank rows (#96 §7) — a stated absence, not a zero */
+.bankReadFailed {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--color-faded);
+}
+
+/* a page-level confirm overlay host (Remove a credential) */
+.confirmHost {
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--color-ink-a22);
+}
+
+.loadingBlock {
+  padding-block: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+.errorNote {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  padding-block: var(--space-5);
+}
+.zeroNote {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+}

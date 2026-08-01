@@ -1,0 +1,10 @@
+/* The shared vertical rhythm for a lens band: a section rule (or band-head) above its content.
+ * Matches the artboards' ~16px head-to-content gap and the ~48px band-to-band gap owned by the lens
+ * root. Kept here so the CoverageBand and any thin band share one spacing rule. */
+
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}

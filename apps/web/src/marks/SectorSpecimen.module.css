@@ -1,0 +1,11 @@
+/* SectorSpecimen.
+ *
+ * The specimens' own colours are literal hexes inside the SVGs (accepted illustrations — see the
+ * header of SectorSpecimen.tsx). This file must never set a fill or a stroke, and it must never set
+ * a width or a height: each drawing keeps its own aspect, and the rendered box comes from the ported
+ * per-sector values in the component. Only layout lives here. */
+
+.specimen {
+  flex-shrink: 0;
+  display: block;
+}

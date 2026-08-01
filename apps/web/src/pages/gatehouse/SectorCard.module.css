@@ -1,0 +1,192 @@
+/* Sector card — ported from `3ON-0`. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 18px 20px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-lg);
+}
+
+/* #107 §1 — the HEAD is the link that opens the sector lens (`SectorCard.tsx` carries the why).
+ *
+ * There is deliberately NOTHING here that positions, stacks or stretches: no `position`, no `inset`,
+ * no `z-index`. The first shape of this fix was a `position:absolute; inset:0` anchor over the card,
+ * which took every string on the card away from the mouse (an anchor drags instead of selecting, and
+ * right-clicks as a link) and then needed the two inner links raised above it to stay clickable at
+ * all. Both of those rules are gone with it, and their absence is asserted (`GatehousePage.test.tsx`).
+ *
+ * The head keeps the ported `.head` geometry unchanged — the element became an <a>, the box did not.
+ *
+ * HOVER is the treatment this file already gives its links: `color: var(--color-seal)`, exactly as
+ * `.noSource:hover` and `.moreSources:hover` below. It marks the thing that is actually clickable
+ * rather than responding across a region that is not, and it is a colour on ink, not a glow
+ * (build-notes §8: a hover here is "a weight or a rule, never a glow"; §8 also records hover/focus/
+ * active as deliberately settled in code, because Paper draws one state per element).
+ *
+ * FOCUS is the ONE global ring (`styles/base.css` :focus-visible), inherited rather than redeclared —
+ * a component that re-declares it is drift. It draws around the head, which is what activates. */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.head:hover .name {
+  color: var(--color-seal);
+}
+
+/* The specimen slot — taller than wide, because it holds a stemmed botanical drawing, not a square
+ * chip. 40×48 fits the widest ported card variant (contacts is exactly 40); the others (35–39) are
+ * centred in it, which is how the artboards set them. */
+.specimen {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 48px;
+}
+
+.headText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.name {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: var(--weight-medium);
+  line-height: 110%;
+}
+
+.latin {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 16px;
+}
+
+/* No `.dot` rule here, and no `[data-sector]` selectors: the 8px sector-ink dot that sat top-right
+ * is gone (§17.1). Two sector inks are byte-identical to state inks, so a bare sector dot in the
+ * status position read as health and never moved with it. The slot is deliberately left free for a
+ * real freshness indicator if one is ever needed. */
+
+.rule {
+  height: 1px;
+  background: var(--color-ink-a22);
+}
+
+.sources {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.sourceIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+
+.sourceName {
+  flex-grow: 1;
+  min-width: 0;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+/* How many connections sit behind one provider name (#100 item 8) — drawn only when there is more
+ * than one, so a single-source sector gains no noise. */
+.sourceFresh {
+  flex-shrink: 0;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* The one exception word a source row shows — its tone is the STATE axis, never sector ink. */
+.sourceState {
+  flex-shrink: 0;
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  line-height: 16px;
+  text-transform: uppercase;
+  color: var(--state-idle);
+}
+.sourceState[data-tone="attention"] {
+  color: var(--state-attention);
+}
+.sourceState[data-tone="error"] {
+  color: var(--state-error);
+}
+
+.noSource {
+  display: inline-block;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 18px;
+}
+.noSource:hover {
+  color: var(--color-seal);
+}
+
+/* The overflow affordance when a sector has more providers than the card holds. Same voice as
+ * `.noSource` but upright — it reports a fact about the card, it is not an absence. */
+.moreSources {
+  display: inline-block;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+.moreSources:hover {
+  color: var(--color-seal);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.coverage {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.readBy {
+  flex-shrink: 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.canAct {
+  color: var(--color-faded);
+}

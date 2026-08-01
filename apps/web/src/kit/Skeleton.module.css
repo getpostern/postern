@@ -1,0 +1,14 @@
+/* Skeleton — the load placeholder (#76). A static inset block, not a shimmer: the design is matter,
+ * not energy (soul §6/§7), and there is no motion in this world. It exists so a hero figure never
+ * flashes an em-dash while its count loads (#60). */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bar {
+  background: var(--color-paper-inset);
+  border-radius: var(--radius-sm);
+}

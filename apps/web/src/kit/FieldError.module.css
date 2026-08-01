@@ -1,0 +1,53 @@
+/* FieldError — three connect-form failures, and only one is ours (build-notes §14.1d). Ported from
+ * `FHB-0`. `shape` is caught before a round-trip (seal). `provider` quotes THEIR string verbatim in
+ * mono — we never paraphrase a provider error. `already` is nobody's failure: no seal, no red. */
+
+.shape {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.provider {
+  display: flex;
+  gap: 10px;
+}
+
+.providerBar {
+  align-self: stretch;
+  flex-shrink: 0;
+  width: 2px;
+  background: var(--color-seal);
+}
+
+.providerText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ourSentence {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* Their literal string, unparaphrased, in mono — the operator needs the exact text to search for. */
+.theirString {
+  margin: 0;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.already {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}

@@ -1,0 +1,33 @@
+/* AppShell — the rail + the fluid main column.
+ *
+ * The shell is FLUID (#67): the main column grows, its content is bounded by a MAX-width, and
+ * nothing hard-codes the 1440 artboard. Real breakpoint structure lives here so the later mobile
+ * reflow (out of scope now) is not a retrofit. The page body never scrolls horizontally — wide
+ * content (tables) scrolls inside its own container. */
+
+.shell {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 40px 48px;
+  /* The body never scrolls sideways; a wide child owns its own overflow. */
+  overflow-x: hidden;
+}
+
+/* The drawn content column is 1106px inside the 1440 artboard. Capping keeps line lengths sane on
+ * ultrawide displays while staying fully fluid below the cap. */
+.content {
+  max-width: 1106px;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 24px 20px;
+  }
+}

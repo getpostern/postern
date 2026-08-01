@@ -1,0 +1,43 @@
+/* InstitutionMark.
+ *
+ * The crafted vectors carry their brand colour inside the SVG. The monogram tile's ground is the
+ * brand's own official hex, handed in as `--institution-mark-ground` because it varies per
+ * institution — the one genuinely dynamic value here. Everything else is fixed by the law's recipe:
+ * 22×22, radius 5px, 1px solid #2A2118 border, cream initials in the display face, 13px for one
+ * character and 11px for two. */
+
+.mark {
+  flex-shrink: 0;
+  display: block;
+}
+
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--institution-mark-size, 22px);
+  height: var(--institution-mark-size, 22px);
+  border-radius: calc(5px * var(--institution-mark-scale, 1));
+  /* Literal ink, not a token: this is the law's brand recipe, not the app's ink scale. */
+  border: 1px solid #2a2118;
+  background-color: var(--institution-mark-ground);
+}
+
+.initialsOne,
+.initialsTwo {
+  font-family: var(--font-display);
+  font-weight: 600;
+  /* Cream, from the law's recipe. */
+  color: #f5edda;
+}
+
+.initialsOne {
+  font-size: calc(13px * var(--institution-mark-scale, 1));
+  line-height: 1;
+}
+
+.initialsTwo {
+  font-size: calc(11px * var(--institution-mark-scale, 1));
+  line-height: calc(11px * var(--institution-mark-scale, 1));
+}

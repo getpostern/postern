@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Context Gateway — Agent-Authored Connectors</title>
+<style>
+  :root{
+    --paper:#e8edf1;--paper-2:#eef2f5;--panel:#f4f7f9;
+    --ink:#16212a;--ink-soft:#4d5e69;--ink-faint:#8294a0;
+    --line:#c5d2db;--line-2:#d6e0e7;
+    --blue:#1f53c9;--blue-deep:#173f96;--blue-wash:#dde6f7;
+    --amber:#b5560c;--amber-wash:#f1e2cf;
+    --green:#1d6b4f;--green-wash:#dcebe5;
+    --red:#8f2e2e;--red-wash:#eddada;
+    --code-bg:#15202a;--code-fg:#d7e0e7;
+    --serif:"Iowan Old Style","Charter","Palatino Linotype",Georgia,"Times New Roman",serif;
+    --sans:"Avenir Next","Optima","Gill Sans MT",Futura,"Helvetica Neue",sans-serif;
+    --mono:"SF Mono","Menlo","Monaco","Roboto Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--serif);font-size:17.5px;line-height:1.62;
+    background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:28px 28px;background-position:-1px -1px;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 50% 0%,rgba(232,237,241,0) 0%,var(--paper) 78%);}
+  .wrap{max-width:55rem;margin:0 auto;padding:0 1.6rem;position:relative;z-index:1;}
+  .narrow{max-width:43rem;}
+  ::selection{background:var(--blue);color:#fff;}
+  header.top{border-bottom:1.5px solid var(--ink);background:rgba(232,237,241,.9);backdrop-filter:blur(6px);position:sticky;top:0;z-index:40;}
+  .top .wrap{display:flex;justify-content:space-between;align-items:center;padding:.85rem 1.6rem;}
+  .mark{font-family:var(--mono);font-size:.74rem;letter-spacing:.04em;font-weight:600;text-transform:uppercase;}
+  .mark b{color:var(--blue);}
+  .top .meta{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--ink-faint);text-transform:uppercase;}
+  .hero{padding:5rem 0 3.2rem;}
+  .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--blue);display:flex;align-items:center;gap:.8rem;margin-bottom:2rem;}
+  .tag::after{content:"";height:1px;flex:1;max-width:6rem;background:var(--blue);opacity:.45;}
+  h1{font-size:clamp(2.2rem,5.6vw,3.5rem);line-height:1.05;font-weight:400;letter-spacing:-.015em;margin:0 0 1.4rem;}
+  h1 .b{color:var(--blue);}
+  h1 .a{color:var(--amber);}
+  .lede{font-size:clamp(1.08rem,2.2vw,1.32rem);line-height:1.46;color:var(--ink-soft);max-width:42rem;}
+  .lede b{color:var(--ink);font-weight:600;}
+  .status{margin-top:1.8rem;font-family:var(--mono);font-size:.72rem;color:var(--amber);border:1px solid var(--amber);background:var(--amber-wash);display:inline-block;padding:.4rem .8rem;border-radius:3px;letter-spacing:.03em;}
+  section{padding:3.2rem 0;border-top:1px solid var(--line);}
+  .sec-no{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:1.1rem;}
+  .sec-no b{color:var(--blue);}
+  h2{font-size:clamp(1.55rem,3.4vw,2.2rem);line-height:1.12;font-weight:400;letter-spacing:-.01em;margin:0 0 1.1rem;}
+  h2 em{font-style:italic;color:var(--blue);}
+  h3{font-family:var(--sans);font-size:1.02rem;font-weight:600;margin:2.1rem 0 .5rem;letter-spacing:.005em;}
+  h4{font-family:var(--mono);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin:1.7rem 0 .5rem;}
+  p{margin:0 0 1.1rem;}
+  strong{font-weight:600;}
+  code.inl{font-family:var(--mono);font-size:.84em;background:var(--paper-2);border:1px solid var(--line);border-radius:2px;padding:.03em .3em;}
+  pre{font-family:var(--mono);font-size:.73rem;line-height:1.55;background:var(--code-bg);color:var(--code-fg);padding:1.1rem 1.2rem;border-radius:4px;overflow-x:auto;margin:1.3rem 0;border:1px solid #283643;}
+  pre .c{color:#7f93a3;}
+  .tbl{margin:1.4rem 0;overflow-x:auto;border:1px solid var(--line);border-radius:4px;}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;background:var(--panel);}
+  th{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;text-align:left;color:var(--ink-soft);background:var(--paper-2);padding:.6rem .8rem;border-bottom:1.5px solid var(--line);font-weight:600;}
+  td{padding:.58rem .8rem;border-bottom:1px solid var(--line-2);vertical-align:top;font-family:var(--sans);line-height:1.42;}
+  tr:last-child td{border-bottom:none;}
+  td.m,th.m{font-family:var(--mono);font-size:.73rem;}
+  .note{border-left:3px solid var(--blue);background:var(--paper-2);padding:1rem 1.2rem;margin:1.5rem 0;border-radius:0 3px 3px 0;}
+  .note.amber{border-color:var(--amber);}
+  .note.green{border-color:var(--green);}
+  .note.red{border-color:var(--red);}
+  .note .nt{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--blue-deep);font-weight:600;margin-bottom:.4rem;}
+  .note.amber .nt{color:var(--amber);}
+  .note.green .nt{color:var(--green);}
+  .note.red .nt{color:var(--red);}
+  .note p{margin:0 0 .6rem;font-size:.94rem;line-height:1.5;}
+  .note p:last-child{margin:0;}
+  .badge{font-family:var(--mono);font-size:.62rem;font-weight:600;letter-spacing:.06em;border-radius:2px;padding:.1rem .42rem;display:inline-block;white-space:nowrap;}
+  .badge.own{background:var(--green-wash);color:var(--green);border:1px solid var(--green);}
+  .badge.gen{background:var(--blue-wash);color:var(--blue-deep);border:1px solid var(--blue);}
+  .badge.open{background:var(--paper);color:var(--ink-faint);border:1px solid var(--line);}
+  ul.tight{margin:.6rem 0 1.2rem;padding-left:1.1rem;}
+  ul.tight li{margin:.34rem 0;font-family:var(--sans);font-size:.92rem;line-height:1.46;}
+  ul.tight li::marker{color:var(--blue);}
+  ol.steps{counter-reset:s;list-style:none;margin:1.6rem 0;padding:0;}
+  ol.steps li{counter-increment:s;position:relative;padding:.85rem 0 .85rem 3rem;border-top:1px solid var(--line-2);font-family:var(--sans);font-size:.95rem;line-height:1.5;}
+  ol.steps li:first-child{border-top:none;}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:.78rem;font-family:var(--mono);font-size:.8rem;color:#fff;background:var(--blue);width:1.5rem;height:1.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;}
+  ol.steps li b{color:var(--ink);font-weight:600;}
+  figure{margin:2rem 0;}
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1.4rem;}
+  figcaption{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-faint);text-align:center;margin-top:.9rem;}
+  svg.dg{width:100%;height:auto;display:block;}
+  .dg text{font-family:var(--mono);fill:var(--ink);}
+  .dg .bx{fill:var(--panel);stroke:var(--blue);stroke-width:1.3;}
+  .dg .bxg{fill:var(--green-wash);stroke:var(--green);stroke-width:1.5;}
+  .dg .bxb{fill:var(--blue-wash);stroke:var(--blue);stroke-width:1.4;}
+  .dg .bx2{fill:#fff;stroke:var(--line);stroke-width:1.2;}
+  .dg .ln{stroke:var(--ink-faint);stroke-width:1.1;fill:none;}
+  .dg .lnb{stroke:var(--blue);stroke-width:1.5;fill:none;}
+  .dg .lna{stroke:var(--amber);stroke-width:1.3;fill:none;stroke-dasharray:4 3;}
+  .dg .t{font-size:11px;}
+  .dg .ts{font-size:8.5px;fill:var(--ink-soft);}
+  .dg .tk{font-size:8.5px;fill:var(--green);letter-spacing:.04em;}
+  .dg .ta{font-size:8.5px;fill:var(--amber);}
+  footer{padding:3rem 0 4rem;border-top:1px solid var(--line);text-align:center;}
+  footer .big{font-size:1.4rem;line-height:1.3;max-width:34rem;margin:0 auto 1rem;}
+  footer .sub{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  @media(max-width:640px){body{font-size:16px;background-size:22px 22px;}.top .wrap{flex-direction:column;align-items:flex-start;gap:.5rem;}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="mark">Personal&nbsp;Context&nbsp;Gateway&nbsp;·&nbsp;<b>Agent-Authored Connectors</b></div>
+    <div class="meta">Direction · Jun 2026</div>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <section class="hero" style="border-top:none;">
+    <div class="tag">Direction · the breadth flywheel</div>
+    <h1>Breadth that <span class="b">writes itself.</span></h1>
+    <p class="lede"><b>Hand-build a universal core to extract the contract — then build the machine that authors the rest.</b> Connectors are the unit of breadth, so the endgame is making authoring one a near-zero-cost, agent-driven act against a clean contract. Then any source becomes agent-queryable context on demand. <b>The connectors are generated; the trust machinery that makes generation safe is the product.</b></p>
+    <div class="status">STATUS: adopted as the eventual flywheel. V0 hand-builds the universal core and extracts the SDK from it; agent-authoring is proven next, and the self-serve sandbox comes last (see the beta roadmap).</div>
+  </section>
+
+  <!-- 00 -->
+  <section>
+    <div class="sec-no"><b>00</b> &nbsp;The thesis</div>
+    <h2>The product is a connector-authoring platform. <em>The gateway is its runtime.</em></h2>
+    <div class="narrow">
+      <p>The original framing was "a gateway with connectors," where breadth grows one hand-built adapter at a time — slow, and not differentiated (anyone can hand-write adapters). The sharper framing: <strong>the connector is the unit of extension, so make authoring one trivial and agent-driven, and breadth becomes self-serve and unbounded.</strong></p>
+      <p>This is the logical endpoint of "everything is a connector." If the contract is clean enough that <strong>an agent can author a connector from API docs + the SDK</strong>, you stop building integrations and start building the thing that builds integrations. That's a different, more defensible company: <em>the place where any source becomes agent-queryable personal context — and the catalog writes itself.</em></p>
+    </div>
+    <div class="note green">
+      <div class="nt">Why this is the wedge</div>
+      <p>Every competitor is either a single vertical (one source family, deep) or a notes-only memory store (no real account connectors). A platform whose breadth <em>writes itself</em> is the one thing neither can match without rebuilding their core — and it's the direct payoff of the SDK-first architecture.</p>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section>
+    <div class="sec-no"><b>01</b> &nbsp;Why agents are good at exactly this</div>
+    <h2>Code against a spec is peak agent. Web automation is not.</h2>
+    <div class="narrow">
+      <p>Authoring a connector is writing three functions — <code class="inl">sync</code>, <code class="inl">normalize</code>, <code class="inl">strongKeys</code> — against a narrow, documented, <em>testable</em> interface, mapping a source's API into a fixed schema. This is the single thing modern agents are most reliable at: bounded code generation against a clear contract with a feedback signal (tests). It is <em>not</em> the brittle, side-effectful, long-horizon web automation that "Part A" (autonomous account creation) would require — see §06.</p>
+    </div>
+<pre><span class="c">// the entire authoring target — three functions against one interface</span>
+interface Connector&lt;TNormalized&gt; {
+  sync(ctx): AsyncIterable&lt;RawRecord&gt;;        <span class="c">// pull from the source's API since a cursor</span>
+  normalize(raw): TNormalized;                <span class="c">// map → the sector's standard schema</span>
+  strongKeys(raw): Record&lt;string, string&gt;;    <span class="c">// deterministic keys</span>
+}</pre>
+    <h4>The guardrails that turn "an agent wrote it" into "and it's safe to run"</h4>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">guardrail</th><th>what it does</th></tr></thead>
+      <tbody>
+        <tr><td class="m">documented-API-first</td><td>Generate against a real, documented API. Scraping/undocumented APIs are brittle and ToS-gray — gate them out (or flag as best-effort).</td></tr>
+        <tr><td class="m">sandboxed runtime</td><td>Generated code runs with <strong>no ambient secrets</strong> — only the scoped token, egress restricted to the source's domain, with CPU/time/memory caps.</td></tr>
+        <tr><td class="m">conformance tests</td><td>Auto-validate that it emits <strong>schema-valid</strong> normalized rows, is idempotent, paginates, and refreshes auth — before it's ever trusted.</td></tr>
+        <tr><td class="m">trust tier</td><td>"My agent wrote this for my own box" (self-host, my risk) vs a <strong>shared community connector</strong> (human-reviewed before others rely on it).</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="sec-no"><b>02</b> &nbsp;The authoring loop</div>
+    <h2>Generate → sandbox → conform → ship.</h2>
+    <figure>
+      <div class="fig">
+        <svg class="dg" viewBox="0 0 900 290" role="img" aria-label="Agent-authored connector loop">
+          <!-- inputs -->
+          <rect class="bx2" x="16" y="70" width="150" height="74" rx="5"/>
+          <text x="91" y="98" text-anchor="middle" class="t">INPUTS</text>
+          <text x="91" y="114" text-anchor="middle" class="ts">SDK + schema</text>
+          <text x="91" y="127" text-anchor="middle" class="ts">+ API docs / session</text>
+          <path class="ln" d="M166 107 L196 107"/>
+          <!-- agent -->
+          <rect class="bxb" x="196" y="70" width="150" height="74" rx="5"/>
+          <text x="271" y="98" text-anchor="middle" class="t">AGENT GENERATES</text>
+          <text x="271" y="114" text-anchor="middle" class="ts">sync · normalize</text>
+          <text x="271" y="127" text-anchor="middle" class="ts">strongKeys · tests</text>
+          <text x="271" y="60" text-anchor="middle" class="ts">generated (commodity)</text>
+          <path class="lnb" d="M346 107 L376 107"/>
+          <!-- sandbox -->
+          <rect class="bxg" x="376" y="70" width="150" height="74" rx="5"/>
+          <text x="451" y="98" text-anchor="middle" class="t">SANDBOX RUN</text>
+          <text x="451" y="114" text-anchor="middle" class="ts">scoped token only</text>
+          <text x="451" y="127" text-anchor="middle" class="ts">egress allowlist · caps</text>
+          <path class="lnb" d="M526 107 L556 107"/>
+          <!-- conformance -->
+          <rect class="bxg" x="556" y="70" width="150" height="74" rx="5"/>
+          <text x="631" y="98" text-anchor="middle" class="t">CONFORMANCE</text>
+          <text x="631" y="114" text-anchor="middle" class="ts">schema-valid? idempotent?</text>
+          <text x="631" y="127" text-anchor="middle" class="ts">auth-refresh? paginates?</text>
+          <!-- owned bracket -->
+          <path class="ln" d="M376 156 L376 164 L706 164 L706 156" stroke="var(--green)"/>
+          <text x="541" y="178" text-anchor="middle" class="tk">OWNED — the trust machinery (the moat)</text>
+          <!-- to live -->
+          <path class="lnb" d="M706 107 L736 107"/>
+          <rect class="bx" x="736" y="70" width="148" height="74" rx="5"/>
+          <text x="810" y="94" text-anchor="middle" class="t">LIVE CONNECTOR</text>
+          <text x="810" y="110" text-anchor="middle" class="ts">(human-reviewed</text>
+          <text x="810" y="122" text-anchor="middle" class="ts">to be shared)</text>
+          <!-- feedback loop -->
+          <path class="lna" d="M631 144 C631 220, 271 220, 271 144"/>
+          <text x="451" y="214" text-anchor="middle" class="ta">fail → back to the agent with the conformance report (the feedback signal)</text>
+        </svg>
+      </div>
+      <figcaption>The agent generates; the owned sandbox + conformance gate decide what's safe and correct enough to run.</figcaption>
+    </figure>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="sec-no"><b>03</b> &nbsp;Where the moat actually is</div>
+    <h2>Not the connectors. Not the SDK. The <em>trust machinery.</em></h2>
+    <div class="tbl"><table>
+      <thead><tr><th>layer</th><th class="m">who owns it</th><th>why</th></tr></thead>
+      <tbody>
+        <tr><td>The connectors</td><td class="m"><span class="badge gen">generated</span></td><td>Commodity — an agent writes them. No defensibility in the artifact.</td></tr>
+        <tr><td>The SDK + schema contract</td><td class="m"><span class="badge open">Apache / open</span></td><td>Open on purpose, to maximize who can author. Not a moat by itself.</td></tr>
+        <tr><td><strong>The sandbox</strong></td><td class="m"><span class="badge own">owned</span></td><td>Makes running generated code <strong>safe</strong> (no ambient secrets, egress-limited, capped). Hard to build, the whole reason to trust it.</td></tr>
+        <tr><td><strong>The conformance harness</strong></td><td class="m"><span class="badge own">owned</span></td><td>Makes generated code <strong>correct &amp; uniform</strong> (schema-valid, idempotent, auth-safe). The quality gate nobody else has bothered to build.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note">
+      <div class="nt">The one-line version</div>
+      <p>Generation is cheap; everyone has the same frontier model. <strong>Trustworthy</strong> generation — safe to run, correct against a schema, uniform across hundreds of sources — is not. That layer is the owned, defensible product.</p>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="sec-no"><b>04</b> &nbsp;Getting here — extract, then automate</div>
+    <h2>Hand-build the core. Extract the SDK. Then let agents author.</h2>
+    <div class="narrow">
+      <p>You can't design a good connector SDK in a vacuum — you extract it from a few real connectors, then automate. So V0 hand-builds the universal core (agent-assisted, reviewed); that crystallizes the SDK + conformance harness; <em>then</em> an agent authors against the hardened contract; and only when authoring opens to <em>users</em> do you build the sandbox.</p>
+    </div>
+    <ol class="steps">
+      <li><b>Hand-build the core (V0).</b> Finance, the Outlook + Gmail bundles, Whoop, Home Assistant — agent-assisted and reviewed. The variety of API shapes is the point: it's what a good contract has to cover.</li>
+      <li><b>Extract the SDK + conformance harness.</b> From those real connectors, crystallize the <code class="inl">@pci/sdk</code> <code class="inl">Connector</code> interface + normalized schemas, and a harness that asserts schema-valid rows, idempotency, pagination, and auth refresh. The harness <em>is</em> the IP.</li>
+      <li><b>Prove agent-authoring.</b> Hand an agent the now-hardened SDK + a new source's API docs; it authors the connector; you review; it passes the harness. <strong>The thesis, proven cheaply — on a battle-tested contract.</strong></li>
+      <li><b>Build the sandbox.</b> Only now — because only now does <em>untrusted, user-triggered</em> generated code run: a constrained executor with scoped token, egress allowlist, no ambient secrets, and caps.</li>
+      <li><b>Open the self-serve loop.</b> "Connect X" → agent authors → sandbox + conform → review → live. The sharing/review tier turns generated connectors into the open ecosystem.</li>
+    </ol>
+    <div class="note green">
+      <div class="nt">The milestone that matters</div>
+      <p>V0 ships at steps 1–2 (a real gateway over the hand-built core). The <em>thesis</em> milestone is step 3: <strong>"an agent wrote a connector — we didn't — against our extracted SDK, and it passed conformance and pulled real data."</strong> That's the proof, and the demo.</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="sec-no"><b>05</b> &nbsp;Risks, eyes open</div>
+    <h2>The honest costs of going meta-first.</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>risk</th><th>mitigation</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Framework-in-a-vacuum.</strong> Over-polishing the abstraction before a real connector validates it.</td><td>The extract-then-automate order <em>is</em> the mitigation: hand-build real connectors first and extract the SDK from them — never design the abstraction up front. The harness is only "done" when a connector passes against real data.</td></tr>
+        <tr><td><strong>The sandbox is real work — but deferred.</strong> Running untrusted generated code safely is non-trivial; it's the cost of opening authoring to users.</td><td>It lands in Phase 3 (self-serve), not at V0 — your own reviewed connectors don't need it. Lean on an existing isolation primitive (locked-down container / WASM / microVM); buy the isolation, own the policy.</td></tr>
+        <tr><td><strong>API quality varies.</strong> Clean docs → great; undocumented/scraped → brittle.</td><td>Pick a clean-API source first (Whoop, Home Assistant) so the thesis test isn't confounded. Tier sources by API quality.</td></tr>
+        <tr><td><strong>Complexity creep.</strong> This is more ambitious than the de-escalated simple gateway.</td><td>It's the <em>right</em> complexity <em>if</em> "breadth writes itself" is the bet. Keep the first slice narrow (one sector, one source) so it stays shippable.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="sec-no"><b>06</b> &nbsp;Parked: Part A — autonomous web onboarding</div>
+    <h2>Why "agent makes the dev account &amp; reads the OTP" is <em>not</em> in this plan.</h2>
+    <div class="narrow">
+      <p>The sibling idea — an agent driving a browser to create a developer account, read the email OTP, mint tokens, and self-onboard — is deferred deliberately. It is a different, far riskier capability than authoring code:</p>
+    </div>
+    <ul class="tight">
+      <li><strong>The sources that matter are gated.</strong> Plaid requires an approved company application; Google sensitive scopes (Gmail) require app verification (weeks, security review). No agent clicks past those. Auto-onboarding only works on permissive, ungated APIs.</li>
+      <li><strong>It inverts the security model.</strong> It needs an agent with email access + a logged-in browser + credential-creation power — by construction, account-takeover capability. Reading OTP emails / web pages is also the prime prompt-injection surface. That contradicts the "minimal, scoped, auditable custodian" identity.</li>
+      <li><strong>ToS + reputation.</strong> Auto-creating accounts and accepting developer agreements violates many providers' terms, and "read the OTP and finish the flow" is the bot-takeover signature. A trusted custodian can't also be the bot farm hitting everyone's dev portals.</li>
+      <li><strong>Brittleness.</strong> Long web flows break constantly (≈0.95^20 ≈ 36% success on a 20-step flow).</li>
+    </ul>
+    <div class="note amber">
+      <div class="nt">The responsible version, if revisited</div>
+      <p>Solve the underlying dev-app friction with a <strong>hosted OAuth broker</strong> (pre-register the platform apps once → one-click consent). And if an agent assists onboarding, make it <strong>supervised</strong>: the agent drafts and pre-fills, a human approves the consequential steps (account creation, ToS, scope grants). Agent does the tedious 90%; a person owns the binding 10%.</p>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="big">Build the machine that authors connectors. Own the part that makes generation trustworthy.</p>
+    <p class="sub">Personal Context Gateway · Agent-Authored Connectors · June 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>

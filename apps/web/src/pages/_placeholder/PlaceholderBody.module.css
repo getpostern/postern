@@ -1,0 +1,50 @@
+/* PlaceholderBody — the marked not-yet-ported body every route renders until its phase-2 group
+ * replaces it. Deliberately plain: real chrome (rail + masthead frame) around an honest placeholder,
+ * so the shell is navigable before any page ships. */
+
+.body {
+  box-sizing: border-box;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 30px 32px;
+  background: var(--color-paper-inset);
+  border-radius: var(--radius-md);
+}
+
+.kicker {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.headline {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 28px;
+}
+
+.note {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 21px;
+}
+
+.unit {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 3px 8px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}

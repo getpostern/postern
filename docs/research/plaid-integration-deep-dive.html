@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Integrating Plaid into the Personal Context Gateway</title>
+  <style>
+  :root{--ink:#1a1d24;--muted:#5b6470;--line:#e4e7ec;--bg:#fbfbfc;--accent:#0b6e4f;
+        --gotcha-bg:#fff6ed;--gotcha-bd:#f59e0b;--key-bg:#eef4ff;--key-bd:#3b6fd4;--note-bg:#f4f5f7;--note-bd:#9aa3af;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  header{background:linear-gradient(135deg,#0b6e4f,#0a3d62);color:#fff;padding:48px 24px 40px;}
+  header .wrap{max-width:860px;margin:0 auto}
+  header h1{margin:0 0 8px;font-size:30px;line-height:1.2;font-weight:700}
+  header .subtitle{margin:0;color:#d7e6df;font-size:15px}
+  .layout{max-width:860px;margin:0 auto;padding:0 24px 80px}
+  nav.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:28px 0;}
+  nav.toc strong{display:block;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  nav.toc ol{margin:0;padding-left:20px;columns:2;column-gap:32px}
+  nav.toc li{margin:4px 0}
+  nav.toc a{color:var(--accent);text-decoration:none}
+  nav.toc a:hover{text-decoration:underline}
+  main{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 32px 32px}
+  section{padding:20px 0;border-top:1px solid var(--line)}
+  section:first-child{border-top:none}
+  h2{font-size:23px;margin:18px 0 10px;line-height:1.25;scroll-margin-top:16px}
+  h3{font-size:18px;margin:22px 0 8px;color:#2a2f3a}
+  p{margin:10px 0}
+  code{background:#f1f2f4;border-radius:4px;padding:1px 5px;font-size:.9em;
+       font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  a{color:var(--accent)}
+  table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+  th{background:#f4f6f8;font-weight:600}
+  tbody tr:nth-child(even){background:#fafbfc}
+  ul,ol{margin:10px 0;padding-left:24px}
+  li{margin:5px 0}
+  .gotcha,.key,.note{border-radius:10px;padding:14px 18px;margin:16px 0;border-left:4px solid}
+  .gotcha{background:var(--gotcha-bg);border-color:var(--gotcha-bd)}
+  .key{background:var(--key-bg);border-color:var(--key-bd)}
+  .note{background:var(--note-bg);border-color:var(--note-bd)}
+  .gotcha::before{content:"⚠ Gotcha";display:block;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#9a5b00;margin-bottom:4px}
+  .key::before{content:"★ Key point";display:block;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#27508f;margin-bottom:4px}
+  .note::before{content:"Note";display:block;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5b6470;margin-bottom:4px}
+  .src{color:var(--muted);font-size:12.5px;font-style:italic}
+  .gotcha p:last-child,.key p:last-child,.note p:last-child{margin-bottom:0}
+  .gotcha p:first-of-type,.key p:first-of-type,.note p:first-of-type{margin-top:0}
+</style>
+</head>
+<body>
+  <header><div class="wrap">
+    <h1>Integrating Plaid into the Personal Context Gateway</h1>
+    <p class="subtitle">The real, convoluted picture — first-hand-verified research · 2026-06-21</p>
+  </div></header>
+  <div class="layout">
+    <nav class="toc"><strong>Contents</strong><ol>
+      <li><a href="#start-here">Start here — the one thing that confused us</a></li>
+      <li><a href="#access-model">The access model</a></li>
+      <li><a href="#link-token-lifecycle">Link flows & token lifecycle</a></li>
+      <li><a href="#item-lifecycle">Item lifecycle & re-auth (the convoluted core)</a></li>
+      <li><a href="#data-sync">Data & sync semantics</a></li>
+      <li><a href="#webhooks-polling">Webhooks vs our polling</a></li>
+      <li><a href="#environments-cost">Environments, plans & cost</a></li>
+      <li><a href="#compliance-oauth">Compliance & OAuth registration</a></li>
+      <li><a href="#codebase-gaps">How it maps to our codebase + gaps</a></li>
+      <li><a href="#operational-gotchas">Operational gotchas</a></li>
+      <li><a href="#recommendation">Recommendation & phasing</a></li>
+      <li><a href="#open-questions">Open questions & live-verify</a></li>
+    </ol></nav>
+    <main>
+<section id="start-here">
+<h2 id="start-here">Start here — the one thing that confused us</h2>
+<p><strong>Bottom line:</strong> A Plaid <code>client_id</code> + <code>secret</code> read <em>nothing</em> on their own. They prove <em>who you are</em>; they do not grant access to anyone's accounts. Plaid has no phone-book of your banks, no "list all my accounts" endpoint, and no way to reuse a connection you made anywhere else. The only way your app ever sees a bank is if the account owner authenticates to that specific bank <em>inside your app's own Plaid Link flow</em>. Everything that feels convoluted about Plaid flows from this one fact.</p>
+
+<div class="key">
+<p><strong>The analogy that ends the confusion.</strong> Think of Plaid like a valet booth, not a key directory:</p>
+<ul>
+<li><strong><code>client_id</code> + <code>secret</code></strong> = your <em>dealership license</em>. It proves you're a legitimate operator and opens <em>no car</em>. By itself it reads zero account data. <span class="src">(plaid.com/docs/api/items · first-hand: "Your client_id and secret alone cannot retrieve account data—you must pair them with an access_token obtained from a specific Item.")</span></li>
+<li><strong>An <em>Item</em></strong> = a <em>valet key to exactly one car (one bank login)</em>, handed to you only after the owner unlocked that car in your booth. One Item covers all accounts behind that one login (checking + savings under one bank). <span class="src">(plaid.com/docs/quickstart/glossary · first-hand)</span></li>
+<li><strong><em>Link</em></strong> = the booth itself — the only place a key is ever cut. There is no master key that lists every car a person owns; you hold exactly the keys (Items) the operator personally created in <em>your</em> booth. <span class="src">(plaid.com/docs/link · first-hand)</span></li>
+</ul>
+</div>
+
+<p>The closest software analogy is "Sign in with Google": the consent is per-app and per-resource. Logging into Google somewhere else doesn't hand <em>your</em> app a read of the user's account. Plaid is the same — a connection made elsewhere does not transfer.</p>
+
+<div class="gotcha">
+<p><strong>The trap most people fall into.</strong> Three things look like they should give an app "a view of my finances," and none of them do:</p>
+<ul>
+<li><strong>"I have my <code>client_id</code> and <code>secret</code> — why is the cache empty?"</strong> Because credentials are an identity, not an access grant. You still have to run a Link flow per bank.</li>
+<li><strong>"I connected my banks at <code>my.plaid.com</code> — why doesn't the gateway see them?"</strong> Because <code>my.plaid.com</code> is the <em>consumer</em> portal where individuals manage their own connections; it is a different account type from your <em>developer</em> dashboard, and its connections live in a different world from your app's Items. <span class="src">(plaid.com/docs/account · first-hand: "A Plaid developer account is different from a Plaid account at my.plaid.com." The access-denial half is a direct consequence of the Item model, not a verbatim line — phrase operator copy as the <em>mechanism</em>, not as a Plaid quote.)</span></li>
+<li><strong>"Doesn't Plaid Layer / phone-number recognition let me skip all this?"</strong> No. Layer just speeds up a <em>returning</em> user — it still mints a brand-new Item through <em>your</em> Link, gives no backend access to connections made elsewhere, and is <strong>incompatible with Hosted Link</strong> (which is the mode this gateway uses). <span class="src">(plaid.com/docs/layer · first-hand: "Layer is not compatible with the Hosted Link integration mode"; "establishes fresh connections within your application environment rather than providing backend access to existing external connections.")</span></li>
+</ul>
+</div>
+
+<p>If you came from SimpleFIN, where you paste one access URL and immediately see every bank behind the Bridge, this is the jarring difference: <strong>Plaid is per-bank, by effort, with a per-bank login each time.</strong> That is not a bug or a misconfiguration — it is the model. The rest of this report walks the consequences honestly.</p>
+</section>
+
+<section id="access-model">
+<h2 id="access-model">The access model — Items, access_tokens, and why there's no "list my accounts"</h2>
+<p><strong>Bottom line:</strong> the entire hierarchy is <code>access_token</code> (1) → <code>Item</code> (1 bank login) → <code>accounts</code> (N). Every read endpoint is keyed by an <code>access_token</code>, and an <code>access_token</code> is only ever born from a Link-minted Item. Coverage = exactly the set of banks the operator personally linked. Nothing more.</p>
+
+<table>
+<thead><tr><th>Concept</th><th>What it is</th><th>Cardinality</th><th>Lifetime</th></tr></thead>
+<tbody>
+<tr><td><code>client_id</code> / <code>secret</code></td><td>Your team identity; reads nothing alone</td><td>One per team</td><td>Long-lived; rotate annually / on compromise</td></tr>
+<tr><td><code>link_token</code></td><td>One-shot ticket to open a Link session</td><td>One per session</td><td>4h (new Item) / 30 min (update mode); overridden by Hosted Link <code>url_lifetime_seconds</code></td></tr>
+<tr><td><code>public_token</code></td><td>Throwaway proof a Link auth succeeded</td><td>One per Item linked</td><td>30 min, single-use</td></tr>
+<tr><td><code>access_token</code></td><td>The durable secret you vault</td><td>One per Item</td><td>Does not expire; revocable via <code>/item/remove</code>; needs re-auth on credential/consent change</td></tr>
+<tr><td><code>Item</code></td><td>One login at one institution</td><td>One per bank login</td><td>Lives until removed or permanently errored</td></tr>
+<tr><td><code>account_id</code></td><td>A single account inside an Item</td><td>N per Item (e.g. checking + savings)</td><td>Stable unless Plaid can't reconcile it</td></tr>
+</tbody>
+</table>
+<p class="src">(plaid.com/docs/quickstart/glossary + plaid.com/docs/api/items · first-hand)</p>
+
+<div class="key">
+<p><strong>Must-remember:</strong> a person with accounts at 4 banks = 4 separate Link auths = 4 Items = 4 vaulted <code>access_tokens</code>. There is genuinely <strong>no Item-spanning handle</strong> and <strong>no endpoint to enumerate the Items behind a credential</strong> — so <em>your database is the only source of truth for "what did I connect."</em> Lose that mapping and you cannot ask Plaid to recover it.</p>
+</div>
+
+<div class="note">
+<p>This is architecturally fine for us — it maps onto "one credential fans out to N connectors," just like one Google credential fans out to contacts+calendar. The difference is that with Plaid each fan-out leaf is an independently-authenticated Item, each its own credential/connector row keyed by <code>external_item_id</code>. The "no list-all-accounts endpoint" claim is a structural inference from the access model (every read is keyed by an <code>access_token</code>), not a quotable line — but it follows necessarily and is corroborated by the absence of any such endpoint in the API. <span class="src">(plaid.com/docs/api/items · first-hand; negative claim is model-inference)</span></p>
+</div>
+
+<p>The only Plaid calls that work with <em>just</em> <code>client_id</code> + <code>secret</code> are <code>/institutions/get</code> and <code>/institutions/get_by_id</code> — and they return institution <em>metadata</em> (names, logos, supported products), never account data. They require a <code>country_codes</code> param. Useful for logos; useless for reading money. <span class="src">(plaid.com/docs/api/institutions · first-hand)</span></p>
+</section>
+
+<section id="link-token-lifecycle">
+<h2 id="link-token-lifecycle">Link flows &amp; token lifecycle — the stacked expiry windows</h2>
+<p><strong>Bottom line:</strong> the only durable artifact is the <code>access_token</code>; everything upstream of it is short-lived, and our loopback/no-webhook design stacks three short windows in a row. Get them wrong and the link is silently lost.</p>
+
+<h3>The capture pipeline (Hosted Link, our path)</h3>
+<ol>
+<li><code>/link/token/create</code> with <code>hosted_link: {}</code> → returns a <code>hosted_link_url</code>. An empty object is enough; <strong>no account-manager enablement and no Dashboard redirect-URI registration</strong> for web Hosted Link. <span class="src">(plaid.com/docs/link/hosted-link · first-hand)</span></li>
+<li>Operator opens the URL, authenticates at the bank inside Plaid's hosted pages.</li>
+<li>We <strong>poll <code>/link/token/get</code></strong> (no webhook) to retrieve the <code>public_token</code>(s).</li>
+<li>Exchange each <code>public_token</code> via <code>/item/public_token/exchange</code> → a permanent <code>access_token</code> + <code>item_id</code>, sealed in the vault.</li>
+</ol>
+
+<div class="gotcha">
+<p><strong>Three short windows, in series:</strong></p>
+<ul>
+<li><strong>Hosted Link URL defaults to 30 minutes</strong> when Plaid isn't delivering it (SMS = 24h, email = 7d). We mint the URL server-side and the operator opens it themselves, so we land in the <strong>30-minute bucket by default</strong>. You <em>must</em> set <code>hosted_link.url_lifetime_seconds</code> explicitly (max 21 days). <span class="src">(plaid.com/docs/link/hosted-link · first-hand)</span></li>
+<li><strong><code>/link/token/get</code> serves the token for only 6 hours</strong> after session completion. If the gateway is down for &gt;6h after the operator links, the Item is lost. <span class="src">(plaid.com/docs/link/hosted-link · first-hand)</span></li>
+<li><strong>The <code>public_token</code> itself dies 30 minutes after issue</strong> and is single-use. Exchange <em>immediately</em> on first sighting — don't queue it. <span class="src">(plaid.com/docs/quickstart/glossary · first-hand)</span></li>
+</ul>
+</div>
+
+<h3>Multi-Item Link changes the response shape</h3>
+<p>With <code>enable_multi_item_link: true</code>, the operator can add several banks in one session — but tokens are <strong>no longer delivered via <code>onSuccess</code></strong>. They arrive as a <code>results.item_add_results</code> <strong>array</strong> from <code>/link/token/get</code> (or via webhook, which we don't use). The doc is explicit: "The on_success object from /link/token/get is deprecated for this flow, as it contains only one token instead of all public tokens." <span class="src">(plaid.com/docs/link/multi-item-link · first-hand)</span></p>
+
+<div class="key">
+<p><strong>Must-remember:</strong> a poller that reads <code>on_success</code> (single token) will silently capture <strong>only one of N</strong> linked banks. The poller must iterate the <code>item_add_results</code> array and exchange <em>each</em> entry into its own <code>access_token</code> + <code>external_item_id</code>.</p>
+</div>
+
+<h3>completion_redirect_uri is not a success signal</h3>
+<div class="note">
+<p>If you wire a loopback <code>completion_redirect_uri</code> for UX, note Plaid calls it "whether the user successfully completed the session, or asked Plaid to exit." So even with a redirect, you must still poll <code>/link/token/get</code> to confirm an Item was actually created — treating the redirect as "done" would create phantom/empty connectors. <span class="src">(plaid.com/docs/link/hosted-link · first-hand)</span></p>
+</div>
+
+<h3>OAuth banks: registration is mostly not our problem (web Hosted Link)</h3>
+<p>The OAuth guide's redirect-URI / Android-package / iOS-universal-link registration steps are for <em>client-side embedded</em> Link. <strong>Web Hosted Link opened in a desktop browser needs no Dashboard redirect-URI registration</strong> — only mobile-app Hosted Link (a universal link) does. Keep the gateway on web Hosted Link and this whole class of setup disappears. <span class="src">(plaid.com/docs/link/oauth · first-hand; the Hosted-Link exemption for OAuth banks specifically was not re-confirmed on that page — flagged in Open Questions.)</span></p>
+</section>
+
+<section id="item-lifecycle">
+<h2 id="item-lifecycle">The Item lifecycle, re-auth &amp; consent expiry — the convoluted core</h2>
+<p><strong>Bottom line:</strong> <strong>connections break and need a human to re-link them, on a recurring ~annual cadence, even when nothing is wrong.</strong> This is the single biggest gap between Plaid's reality and the "connect once, faithful cache" mantra — and it is exactly what SimpleFIN's static access URL does <em>not</em> impose. If you build the Plaid connector and stop at "read-only and done," your finance cache will silently rot within a year.</p>
+
+<div class="key">
+<p><strong>Re-auth is a permanent operational cadence, not a one-time setup.</strong> Under CFPB Section 1033, consumers must reauthorize roughly every 12 months. <code>consent_expiration_time</code> is a real field on the Item, readable via <code>/item/get</code>. Capital One ("consent refreshed after one year"), Fidelity ("every 12 months"), and Bank of America's new API all set ~annual expiry. A perfectly healthy, untouched connection <strong>will</strong> expire on a rolling annual basis and require a human to re-run Link. <span class="src">(plaid.com/docs/api/items · first-hand for the field; per-bank durations from plaid.com/docs/link/oauth + search snippets)</span></p>
+</div>
+
+<h3>How a connection breaks</h3>
+<ul>
+<li><strong>ITEM_LOGIN_REQUIRED</strong> — the central recoverable failure: "the login details of this item have changed (credentials, MFA, or required user action) and a user login is required." The only fix is Link <strong>update mode</strong>; there is no server-side recovery. <span class="src">(plaid.com/docs/errors/item · first-hand)</span></li>
+<li><strong>Consent expiry</strong> — the ~annual 1033 clock above.</li>
+<li><strong>USER_PERMISSION_REVOKED / USER_ACCOUNT_REVOKED (PNC, per-account)</strong> — the user revoked access; the webhook "may not fire if revocation occurred directly at institution," so a bank-side revoke can silently kill sync. <span class="src">(plaid.com/docs/errors/item · first-hand)</span></li>
+<li><strong>ITEM_NOT_FOUND / INSTITUTION_NO_LONGER_SUPPORTED</strong> — unrecoverable; requires a brand-new Item (new <code>external_item_id</code>).</li>
+</ul>
+
+<div class="gotcha">
+<p><strong>A broken Item makes <code>/transactions/sync</code> go QUIET, not loud.</strong> It returns empty arrays — indistinguishable from "no new transactions." A cache that only watches sync output will report a dead connection as merely idle. The authoritative health signal is a <strong>separate <code>/item/get</code> poll</strong>: its nullable <code>error</code> object surfaces ITEM_LOGIN_REQUIRED, and <code>status.transactions.last_successful_update</code> / <code>last_failed_update</code> + <code>consent_expiration_time</code> tell you freshness and the consent clock. This is a second call path the current sync-only connector does not have. <span class="src">(plaid.com/docs/api/items + plaid.com/docs/api/products/transactions · first-hand)</span></p>
+</div>
+
+<h3>The good news: update mode is cheap to recover from</h3>
+<div class="note">
+<p>Update mode does <strong>NOT</strong> mint a new <code>access_token</code> and needs <strong>no exchange</strong>. You create a <code>link_token</code> carrying the <em>existing</em> <code>access_token</code> (30-min expiry in update mode), the user re-auths in Link, and the same <code>access_token</code> resumes. Crucially for us: <strong><code>access_token</code> and <code>external_item_id</code> are unchanged across re-auth</strong>, so no domain rows get repointed — just clear the error flag and resume the cursor (it backfills the missed window automatically). <span class="src">(plaid.com/docs/link/update-mode · first-hand)</span></p>
+</div>
+
+<h3>The proactive warnings we forfeit</h3>
+<p>Plaid normally pushes 7-day advance warnings — <strong>PENDING_DISCONNECT</strong> (US/CA, with <code>disconnect_time</code> + reason) and <strong>PENDING_EXPIRATION</strong> (EU/UK). These are <strong>webhook-only</strong>. Our loopback gateway has no receiver, so:</p>
+<ul>
+<li><strong>Consent-expiry breaks are recoverable proactively</strong> — we can poll <code>consent_expiration_time</code> on a cadence and compute our own "expiring soon" warning. This covers the common annual re-consent case.</li>
+<li><strong>Migration-driven disconnects (US/CA) are not</strong> — <code>disconnect_time</code> is webhook-only, so we only learn after sync fails. Acceptable to detect reactively. <span class="src">(plaid.com/docs/api/items · first-hand; absence of pollable <code>disconnect_time</code> inferred from the /item/get field list)</span></li>
+</ul>
+
+<div class="gotcha">
+<p><strong>Don't treat every error as "re-auth needed."</strong> INSTITUTION_DOWN / INSTITUTION_NOT_RESPONDING / INSTITUTION_NOT_AVAILABLE are <em>transient</em> — back off and retry, do not prompt the operator. Lumping them with ITEM_LOGIN_REQUIRED produces false re-auth prompts that erode trust. The connector needs a real state machine (see <a href="#codebase-gaps">codebase gaps</a>). <span class="src">(plaid.com/docs/errors/institution · first-hand)</span></p>
+</div>
+
+<div class="note">
+<p>One more lifecycle landmine: an Item with <code>update_type = user_present_required</code> <strong>cannot refresh in the background at all</strong> — it always needs a user-present re-Link. Surface this per-connection so a stale <code>last_synced_at</code> on such a connection isn't mistaken for a bug. <span class="src">(plaid.com/docs/api/items · first-hand; confidence medium)</span></p>
+</div>
+</section>
+
+<section id="data-sync">
+<h2 id="data-sync">Data &amp; sync — cursor semantics, pending→posted, and the empty first call</h2>
+<p><strong>Bottom line:</strong> <code>/transactions/sync</code> is the right primitive and maps cleanly onto a faithful cache, but it has three sharp edges: the first call is usually empty, pending→posted is a remove+add (not a modify), and the cursor must be committed atomically or the cache silently diverges.</p>
+
+<h3>Cursor mechanics</h3>
+<p>You poll with your saved cursor; the response returns <code>added</code> / <code>modified</code> / <code>removed</code> arrays plus <code>has_more</code> + <code>next_cursor</code>. Omitting the cursor returns full history. The cursor is valid for ≥1 year. <span class="src">(plaid.com/docs/api/products/transactions · first-hand)</span></p>
+
+<div class="gotcha">
+<p><strong>Never persist <code>next_cursor</code> mid-pagination.</strong> On TRANSACTIONS_SYNC_MUTATION_DURING_PAGINATION, "the entire pagination request loop must be restarted beginning with the cursor for the first page." Buffer <em>all</em> pages and commit the final <code>next_cursor</code> only after <code>has_more = false</code>, in the <em>same DB transaction</em> as the applied rows. The cursor is the only read-side idempotency mechanism — there is no idempotency-key header for reads. <span class="src">(plaid.com/docs/api/products/transactions + plaid.com/docs/api · first-hand)</span></p>
+</div>
+
+<div class="gotcha">
+<p><strong>pending → posted is remove + add with a NEW <code>transaction_id</code></strong>, not an in-place modify. When a pending transaction posts, the pending id shows up in <code>removed</code> and the posted transaction arrives fresh in <code>added</code> (carrying the old id in <code>pending_transaction_id</code>). If the connector keys only on <code>transaction_id</code> and ignores <code>removed</code>, <strong>every posted transaction double-counts its pending ghost</strong>. This is exactly what tombstones (ADR 0004) are for. <span class="src">(plaid.com/docs/transactions/transactions-data · first-hand)</span></p>
+</div>
+
+<h3>The empty first call</h3>
+<div class="note">
+<p>Initial sync is asynchronous and two-phase. "It is common that no transactions will be returned during this first call." A <code>transactions_update_status</code> field walks NOT_READY → INITIAL_UPDATE_COMPLETE (~30 days) → HISTORICAL_UPDATE_COMPLETE (full window). With no webhook, we learn data is ready only by re-polling. <strong>The Console must render "syncing / not ready" distinct from "connected but empty," or the operator thinks it's broken right after linking.</strong> Kick an immediate follow-up sync after exchange rather than waiting the full 6h interval. <span class="src">(plaid.com/docs/transactions + plaid.com/docs/api/products/transactions · first-hand)</span></p>
+</div>
+
+<h3>History depth is frozen at link time</h3>
+<div class="gotcha">
+<p><code>transactions.days_requested</code> (default 90, range 1–730) is set when the <code>link_token</code> is minted and is <strong>immutable after the Item initializes</strong> — "This field has no effect if Transactions is already initialized on the Item." You cannot widen history later without re-linking the bank. For a faithful financial-history cache, request the deep window up front. (Our connector currently sets <strong>365</strong> for SimpleFIN parity — see <a href="#codebase-gaps">codebase gaps</a>; research recommends 730.) <span class="src">(plaid.com/docs/api/products/transactions · first-hand)</span></p>
+</div>
+
+<h3>Balances and sign convention</h3>
+<ul>
+<li><strong>Use <code>/accounts/get</code> for cached balances</strong> — free, returns Plaid's last-known balance, "typically update daily" while Transactions runs, 15/min per Item. Accounts already arrive inside each <code>/transactions/sync</code> page too. <span class="src">(plaid.com/docs/api/accounts · first-hand)</span></li>
+<li><strong>Reserve <code>/accounts/balance/get</code> for explicit live drills</strong> — it forces a real-time pull (p50 ~3s, p95 ~11s), is <strong>billed per successful call</strong>, and is capped at <strong>5/min, 30/HOUR per Item</strong>. A chatty agent on this path is a self-inflicted rate-limit and cost footgun. <span class="src">(plaid.com/docs/balance + plaid.com/docs/errors/rate-limit-exceeded · first-hand)</span></li>
+<li><strong>Plaid's <code>amount</code> is positive = money OUT</strong> — the <em>opposite</em> of our convention (negative = out). The connector negates on write; this must stay covered by a fixture test or spending/income silently flips for Plaid only. <span class="src">(plaid.com/docs/api/products/transactions · first-hand)</span></li>
+</ul>
+
+<h3>Enrichment is free in the sync output</h3>
+<div class="note">
+<p>PFC category, <code>merchant_name</code>, <code>logo_url</code>, <code>website</code>, <code>payment_channel</code>, and the <code>counterparties[]</code> array all arrive <em>inside</em> <code>/transactions/sync</code> for Plaid-sourced Items — no extra call. The standalone <code>/transactions/enrich</code> endpoint is a separate, separately-billed product for enriching <em>your own</em> external transactions; do not wire it. Vendor the PFC taxonomy CSV (<code>plaid.com/documents/pfc-taxonomy-all.csv</code>) rather than hardcoding categories, so SimpleFIN's agent-inferred categories share the same vocabulary. <span class="src">(plaid.com/docs/api/products/enrich · first-hand; the commonly-cited ~16 primary-category count is general knowledge, not first-hand-verified here)</span></p>
+</div>
+</section>
+
+<section id="webhooks-polling">
+<h2 id="webhooks-polling">Webhooks vs our polling — what loopback loses, and what it gains</h2>
+<p><strong>Bottom line:</strong> polling loses no transaction <em>data</em> and is explicitly a supported pattern. It loses <em>push latency</em> (bounded by the bank anyway) and the <em>proactive</em> 7-day disconnect warning. In exchange it deletes an entire security-critical surface. For a loopback self-host gateway, poll-only is the correct call — confirmed, not a compromise.</p>
+
+<div class="key">
+<p><strong>Why we lose almost nothing on freshness:</strong> "Plaid typically checks for new transactions data between one and four times per day, depending on the institution." A webhook can't make data fresher than the bank's own 1–4x/day cadence — it only tells you the moment one of those refreshes landed. Our 6h poll (4x/day) lines up with the upper end. Honest lag: up to ~6h, often dominated by the bank's own delay. <code>/transactions/refresh</code> (2/min, 120/hour per Item) covers on-demand "sync now." <span class="src">(plaid.com/docs/api/products/transactions · first-hand)</span></p>
+</div>
+
+<div class="note">
+<p><strong>Webhooks aren't even reliable on their own.</strong> Plaid retries for 24h with exponential backoff, 10s timeout, and explicitly delivers duplicates and out-of-order — so "design your application to handle duplicate and out-of-order webhooks." Every robust integration is told to build a polling reconciliation fallback regardless. <em>We are simply running that fallback path; we just skip the low-latency nudge.</em> <span class="src">(plaid.com/docs/api/webhooks · first-hand)</span></p>
+</div>
+
+<div class="key">
+<p><strong>Skipping the receiver is a security win, not a regression.</strong> Trusting a Plaid webhook requires a 14-step ES256/JWS verification: read the <code>Plaid-Verification</code> JWS header, assert <code>alg == ES256</code>, fetch the JWK via <code>/webhook_verification_key/get</code>, cache it and honor rotation, verify the signature, check <code>iat</code> within 5 minutes (replay guard), then SHA-256 the <em>exact</em> raw body and constant-time-compare it to the claim. Skip any step and an attacker can forge webhooks. Plus the URL must be public HTTPS with a valid cert — fundamentally incompatible with loopback. Poll-only deletes this whole class of work and risk. <span class="src">(plaid.com/docs/api/webhooks/webhook-verification · first-hand)</span></p>
+</div>
+
+<p>What we genuinely forgo: the <strong>proactive</strong> 7-day PENDING_DISCONNECT (US/CA) warning, which has no clean polling equivalent. We recover the <em>consent-expiry</em> class by polling <code>consent_expiration_time</code>, and detect everything else reactively at the next poll. The correct substitute for the receiver is an <strong><code>/item/get</code> health poll</strong>, not a webhook ingress — see the next section and <a href="#codebase-gaps">codebase gaps</a>.</p>
+
+<div class="note"><p>Do <strong>not</strong> set the <code>webhook</code> param in <code>/link/token/create</code>. Omitting it makes the Item webhook-free with no Dashboard registration and no error. (Whether <code>/item/webhook/update</code> exists to retrofit a webhook later is unverified — it was not present in the fetched docs. Don't claim webhooks can be added later without checking.) <span class="src">(plaid.com/docs/api/webhooks · first-hand; /item/webhook/update existence UNVERIFIED)</span></p></div>
+</section>
+
+<section id="environments-cost">
+<h2 id="environments-cost">Environments, plans &amp; cost — opaque, and hostile to a long-lived cache</h2>
+<p><strong>Bottom line:</strong> there are only two environments (Sandbox = fake data, Production = real). Plaid publishes <strong>no dollar amounts anywhere</strong> — pricing only appears on the last page of a Production request form. The free Trial tier is genuinely free real data, but it's narrow, lifetime-capped at 10 Items, and cliff-edged into opaque billing. And the Transactions billing model — a per-Item monthly subscription that accrues "as long as a valid access_token exists" — is precisely the worst case for a cache that deliberately holds long-lived tokens.</p>
+
+<table>
+<thead><tr><th>Dimension</th><th>Sandbox</th><th>Trial plan</th><th>Pay-as-you-go (Production)</th></tr></thead>
+<tbody>
+<tr><td>Data</td><td>Fake / test only</td><td>Real Production data</td><td>Real Production data</td></tr>
+<tr><td>Cost</td><td>Free</td><td>Free</td><td>Billed — amounts only visible inside the Production request form</td></tr>
+<tr><td>Eligibility</td><td>Anyone</td><td><strong>New US/CA teams created on/after 2026-04-15 only</strong></td><td>Anyone approved for Production</td></tr>
+<tr><td>Item cap</td><td>n/a</td><td><strong>10 lifetime</strong> (<code>/item/remove</code> does NOT free a slot)</td><td>No cap (you pay per Item)</td></tr>
+<tr><td>Transactions billing</td><td>—</td><td>Included (free)</td><td><strong>Per-Item monthly subscription while a valid <code>access_token</code> exists</strong></td></tr>
+<tr><td>Balance billing</td><td>—</td><td>Included (free)</td><td>Flat fee <strong>per successful <code>/accounts/balance/get</code> call</strong></td></tr>
+<tr><td>Compliance gate</td><td>None</td><td>MSA / security questionnaire / app profile <strong>deferred</strong> (but see bank-side caveat)</td><td>Full: MSA + security questionnaire + app/company info</td></tr>
+<tr><td>Approval</td><td>Instant</td><td>~60s auto (90%); else 2–3 business days manual</td><td>Manual review</td></tr>
+</tbody>
+</table>
+<p class="src">(plaid.com/docs/account/billing + plaid.com/docs/quickstart/glossary + plaid.com/pricing + support.plaid.com Trial article · first-hand for billing/glossary; Trial support article is snippet-only on some specifics)</p>
+
+<div class="gotcha">
+<p><strong>The 10-Item Trial cap is a lifetime counter.</strong> "Removing Items created on a Trial plan (using /item/remove) will not allow you to create more Items." Every re-link, every wrong-bank test, every MFA failure that still created an Item permanently burns one of 10 free slots. Steer dogfood/test links to <strong>Sandbox</strong> to avoid bleeding the free tier. <span class="src">(plaid.com/docs/account/billing · first-hand)</span></p>
+</div>
+
+<div class="gotcha">
+<p><strong>Trial → paid is a cliff, and it's retroactive.</strong> On upgrade you "only retain Production access to any products you explicitly requested," and "If you added a subscription fee product (such as ... Transactions) to an Item during your trial, upon upgrading ... you will begin to be charged for that subscription." So exceeding 10 Items flips <em>every existing</em> Transactions Item to a billed monthly subscription at once — and if you forgot to list Transactions on the request form, you can <em>lose</em> access to it. <span class="src">(plaid.com/docs/account/billing · first-hand)</span></p>
+</div>
+
+<div class="gotcha">
+<p><strong>Our cache architecture is the billing worst case on paid Production.</strong> We deliberately retain a valid <code>access_token</code> per Item indefinitely and poll every 6h. The Transactions subscription bills on token <em>existence</em>, not call volume — so every connected bank is a perpetual monthly charge regardless of how often the agent reads. <strong>Disconnect/erase MUST call <code>/item/remove</code> to stop billing</strong>; deleting local rows alone leaves a billable zombie Item alive. <span class="src">(plaid.com/docs/account/billing + plaid.com/docs/api/items · first-hand)</span></p>
+</div>
+
+<div class="note"><p>The dollar amounts themselves are <strong>unobtainable first-hand</strong> — gated behind the Production request form. An operator cannot cost-compare Plaid vs free SimpleFIN without starting a Production application. The honest framing for our docs: "free up to 10 Items on a new US/CA Trial; beyond that, paid Production with per-Item monthly Transactions subscriptions + per-call Balance fees, priced only inside Plaid's request form." Development environment was decommissioned 2024-06-20, so there is no free real-data middle tier. <span class="src">(plaid.com/docs/quickstart/glossary · first-hand)</span></p></div>
+</section>
+
+<section id="compliance-oauth">
+<h2 id="compliance-oauth">Compliance &amp; OAuth registration — the Trial exemption (and its asterisks)</h2>
+<p><strong>Bottom line:</strong> for an <em>eligible</em> operator the compliance burden collapses to near-zero — Trial defers MSA, security questionnaire, and formal company/app info. But two asterisks bite anyway: <strong>some OAuth banks block apps with an empty Application Display Info profile regardless of Trial</strong>, and certain institutions (Schwab especially) have out-of-band, multi-week access requests the Console cannot automate.</p>
+
+<p>The OAuth Production prerequisites are five items — Production access, Dashboard registration, Application Display Info + Company Info, the MSA (US/CA), and the security questionnaire (US/CA) — and the page states: "If you are on a Trial plan, you do not need to complete these requirements until you upgrade to a paid plan." <span class="src">(plaid.com/docs/link/oauth · first-hand)</span></p>
+
+<div class="gotcha">
+<p><strong>The bank-side gate Trial does NOT waive:</strong> Application Display Info "is public information that end users will see ... during OAuth flows," and "some US institutions ... will not allow apps with an empty profile to access their OAuth implementations." This is enforced by the <em>bank</em>, not Plaid — so it remains a required onboarding step for OAuth banks even on Trial. A self-hoster who skips the profile will silently fail to connect specific banks. <span class="src">(plaid.com/docs/link/oauth · first-hand)</span></p>
+</div>
+
+<h3>Per-bank reality table</h3>
+<table>
+<thead><tr><th>Institution</th><th>Setup friction</th><th>Recurring burden</th></tr></thead>
+<tbody>
+<tr><td>Most banks</td><td>Ready within hours of registration</td><td>Standard credential/MFA re-auth on change</td></tr>
+<tr><td>Some institutions</td><td>1–2 days for access</td><td>—</td></tr>
+<tr><td><strong>Chase / PNC</strong></td><td>Security questionnaire required <em>unless on Trial</em> (Trial carves them in inline)</td><td>—</td></tr>
+<tr><td><strong>Charles Schwab</strong></td><td><strong>Up to 6 weeks</strong> after Production approval; PAYG customers must <em>explicitly request</em> access via the OAuth institution status page; name changes need an account manager (Trial users have none)</td><td>—</td></tr>
+<tr><td><strong>Capital One</strong></td><td>Requires specifying data freshness for balance calls</td><td><strong>Annual consent refresh</strong> (per-Item re-auth cliff)</td></tr>
+<tr><td><strong>Fidelity</strong></td><td>No documented separate access request or extended timeline</td><td><strong>12-month consent refresh</strong></td></tr>
+<tr><td><strong>Bank of America</strong></td><td>—</td><td>2026 API migration forces update-mode re-link of existing Items; new API = 12-month consent</td></tr>
+</tbody>
+</table>
+<p class="src">(plaid.com/docs/link/oauth · first-hand for Schwab/Chase/PNC/Capital One/Fidelity; BoA migration from plaid.com/docs/errors/item, confidence medium)</p>
+
+<div class="key">
+<p><strong>Verified correction:</strong> Fidelity is <em>not</em> a Schwab-class separate-request/multi-week gate. The first-hand OAuth guide lists Fidelity only under "12-month consent refresh." The ~6-week, explicit-request burden is <strong>Schwab-specific</strong>. Any earlier doc pairing Fidelity with Schwab's onboarding cliff was wrong. <span class="src">(plaid.com/docs/link/oauth · first-hand)</span></p>
+</div>
+
+<div class="gotcha">
+<p><strong>Trial eligibility is date- and geography-gated.</strong> Only NEW US/CA teams created on/after 2026-04-15 qualify. An operator with a pre-existing Plaid dev account, or outside US/CA, gets <em>no</em> free real-data tier and lands straight on the full paid Production path. The gateway's onboarding docs must tell operators to create a <strong>fresh US/CA dev team</strong> to qualify — otherwise the "near-zero compliance" story doesn't apply to them. <span class="src">(plaid.com/docs/account/billing + support.plaid.com · first-hand / snippet)</span></p>
+</div>
+
+<div class="note"><p><strong>LEI / Section 1033 is a parked future cost, not a current blocker.</strong> "Plaid is not currently enforcing the requirement to have an LEI ... This deadline has been moved from April 2026 until at least July 2026 and its enforcement is currently stayed." One <code>client_id</code> needs one LEI when it lands. Note it in docs; do not build LEI handling now. <span class="src">(plaid.com/docs/link/oauth · first-hand for timeline; per-client_id LEI is search-snippet only)</span></p></div>
+</section>
+
+<section id="codebase-gaps">
+<h2 id="codebase-gaps">How it maps to OUR codebase — and the spec GAPS</h2>
+<p><strong>Bottom line:</strong> the connector's <em>sync</em> half is already correct and matches the docs. The <em>onboarding</em> half is specced (<code>docs/specs/plaid-hosted-link.md</code>, dated today) but not yet merged — its migration <code>0006_plaid_app.sql</code> does not exist yet (migrations stop at <code>0005</code>). The two pieces the spec's "read-only and done" framing hides — <strong>Item-health polling</strong> and an <strong>update-mode re-link UX</strong> — are genuine V0-needs that are currently out of scope.</p>
+
+<h3>What's already right in <code><your-checkout>/src/connectors/plaid.ts</code> (422 lines)</h3>
+<ul>
+<li><strong>Cursor drain</strong> — accumulates added+modified (deduped, modified-wins) across <code>has_more</code> pages and captures the final <code>next_cursor</code> as the durable checkpoint (lines ~321–340).</li>
+<li><strong>Tombstones the <code>removed</code> array</strong> — per-id last-wins reconciliation; surviving removed ids yield deletion records the runner tombstones per ADR 0004 (lines ~304–306, 359–361). This correctly handles pending→posted double-counting.</li>
+<li><strong><code>amount</code> negation</strong> — <code>negateToString()</code> at write (lines ~264–265, 411), with the convention documented in the file header.</li>
+<li><strong>Sandbox path</strong> — <code>/sandbox/public_token/create</code> for headless CI of the exchange+sync path (line ~248).</li>
+</ul>
+
+<h3>What the spec (<code>docs/specs/plaid-hosted-link.md</code>) covers but hasn't landed</h3>
+<ul>
+<li><code>enable_multi_item_link: true</code> + <code>hosted_link: { url_lifetime_seconds: 10800 }</code> (3h, explicit — correctly avoids the 30-min default).</li>
+<li>Per-Item <code>external_item_id</code> keying: credential conflict target <code>(user_id, provider, external_item_id)</code>, connector conflict target <code>(credential_id, external_item_id)</code> — the non-negotiable fix without which the second bank overwrites the first.</li>
+<li>Server-side <code>/link/token/get</code> polling with idempotent re-exchange (catch already-consumed → <code>{skipped:'already_exchanged'}</code>).</li>
+<li>A <code>plaid_app</code> store mirroring the BYO-app pattern; the <code>0006_plaid_app.sql</code> migration + <code>db/schema.sql</code> mirror.</li>
+</ul>
+
+<div class="gotcha">
+<p><strong>GAP 1 — no Item-health visibility.</strong> The connector's <code>itemGet()</code> (line ~237) calls <code>/item/get</code> but only extracts <code>institutionId</code>. It does <strong>not</strong> read the <code>error</code> object, <code>status.transactions.last_*_update</code>, <code>consent_expiration_time</code>, or <code>update_type</code>. So a broken Item is invisible — sync just goes quiet. This is the single most important missing piece for honesty of <code>last_synced_at</code> (mantra 2). Needs a periodic <code>/item/get</code> health poll that stores <code>error_code</code> + <code>consent_expiration_time</code> + <code>update_type</code> per connection and surfaces a per-connection state into <code>describe_context</code> and the Console.</p>
+</div>
+
+<div class="gotcha">
+<p><strong>GAP 2 — no update-mode re-link flow.</strong> The spec lists the manual-token fallback as a non-goal and does not include a Console route to re-launch Link against a broken <code>item_id</code>. Because ~annual re-consent is <em>guaranteed</em> (Capital One / Fidelity / BoA), this is not power-user scope — without it every connection silently rots within a year. It's cheap to build: the <code>access_token</code> / <code>external_item_id</code> survive re-auth, so no row repointing — mint a <code>link_token</code> with the stored <code>access_token</code>, re-open Hosted Link, clear the error flag, resume the cursor.</p>
+</div>
+
+<div class="gotcha">
+<p><strong>GAP 3 — <code>/item/remove</code> not wired into disconnect/erase.</strong> On paid Production a disconnect that only deletes local rows leaves a billable zombie Item. The data-control plane's <code>disconnect</code>/<code>erase</code> must dispatch <code>/item/remove</code> OUT to Plaid (an operator-initiated lifecycle action — distinct from the agent action surface, which stays <code>actions: []</code>).</p>
+</div>
+
+<div class="note">
+<p><strong>GAP 4 (minor) — history depth.</strong> The connector sets <code>transactions: { days_requested: 365 }</code> (line ~195) for SimpleFIN parity. That satisfies the "≥180" floor, but since the value is <em>frozen at Item init</em> and the cache is meant to be a faithful financial history, research recommends 730. Worth a deliberate decision before this becomes immutable per Item.</p>
+</div>
+
+<div class="note">
+<p><strong>GAP 5 — error-code state machine.</strong> The connector surfaces a non-sensitive <code>error_code</code> (line ~171) but does not branch on it. It needs: <em>action_required</em> (ITEM_LOGIN_REQUIRED, ACCESS_NOT_GRANTED, USER_PERMISSION_REVOKED, consent-expiring-soon) → prompt re-link; <em>transient</em> (INSTITUTION_DOWN/NOT_RESPONDING/NOT_AVAILABLE) → backoff; <em>dead</em> (ITEM_NOT_FOUND, INSTITUTION_NO_LONGER_SUPPORTED) → fresh Link; and crucially <em>terminal</em> 429s (TRIAL_CONNECTION_LIMIT, CREDITS_EXHAUSTED) must NOT be retried — backoff can never clear a hard quota.</p>
+</div>
+</section>
+
+<section id="operational-gotchas">
+<h2 id="operational-gotchas">Operational gotchas — the short list to tape to the wall</h2>
+<p><strong>Bottom line:</strong> most of these are one-line traps that cause a "Plaid is broken" panic when they're actually expected behavior. Bake them into Console copy and the connector's error handling.</p>
+
+<div class="gotcha"><p><strong>Empty cache right after linking is normal.</strong> First <code>/transactions/sync</code> commonly returns nothing; backfill lands over subsequent syncs. Show "syncing / not ready," kick an immediate re-poll, never render empty-but-connected as failure.</p></div>
+
+<div class="gotcha"><p><strong>Trial 10-Item cap surfaces as a 429.</strong> TRIAL_CONNECTION_LIMIT / CREDITS_EXHAUSTED arrive in the same RATE_LIMIT_EXCEEDED family as transient sync throttles. Branch on <code>error_code</code>, treat these as terminal, surface to the operator — do not retry. <span class="src">(plaid.com/docs/errors/rate-limit-exceeded · first-hand)</span></p></div>
+
+<div class="gotcha"><p><strong>Live-balance is a footgun.</strong> <code>/accounts/balance/get</code> is 30/HOUR per Item and billed per call. A chatty agent will exhaust it and run up cost. Route normal balance reads to free cached <code>/accounts/get</code>; gate <code>/accounts/balance/get</code> behind throttled <code>fetch_live</code> only.</p></div>
+
+<div class="gotcha"><p><strong>Sandbox green ≠ Production green.</strong> Sandbox uses a single generic OAuth flow (no per-bank behavior), skips consent checkboxes, allows <code>http</code> redirects, and its data is internally inconsistent. It cannot validate Chase/PNC OAuth quirks or balance/transaction reconciliation. <strong>Gate release on a real Production Trial smoke against a real OAuth bank.</strong> <span class="src">(plaid.com/docs/sandbox · first-hand)</span></p></div>
+
+<div class="note"><p><strong>Test the break→recover loop in Sandbox.</strong> Force ITEM_LOGIN_REQUIRED with <code>/sandbox/item/reset_login</code> (Sandbox Items also auto-expire into it at 30 days), force credential errors via the <em>password</em> field (<code>error_INVALID_CREDENTIALS</code>, <code>mfa_device</code> + code 1234), and validate the full detect→update-mode→resume path before claiming dogfood-ready. Sandbox webhook tooling is useless to us (no receiver). <span class="src">(plaid.com/docs/sandbox + plaid.com/docs/sandbox/test-credentials · first-hand)</span></p></div>
+
+<div class="note"><p><strong>Vault design already matches Plaid's expectations.</strong> Long-lived <code>access_token</code> sealed, never client-side; app secret vault-sealed. A compromised <code>access_token</code> rotates via <code>/item/access_token/invalidate</code> (returns a NEW token for the same Item — re-seal in place, no re-link). This is distinct from the re-link required for ITEM_LOGIN_REQUIRED. <span class="src">(plaid.com/docs/api · first-hand for headers; invalidate is snippet-level)</span></p></div>
+
+<div class="gotcha"><p><strong><code>/item/remove</code> is immediate and destructive.</strong> No grace period — the token invalidates at once and any in-flight sync fails. Define cleanup semantics in disconnect (orphan vs hard-delete) and don't call it mid-sync.</p></div>
+</section>
+
+<section id="recommendation">
+<h2 id="recommendation">Recommendation &amp; phasing</h2>
+<p><strong>Bottom line:</strong> keep SimpleFIN as the default, free, zero-friction finance connector; ship Plaid honestly as the coverage-upgrade / hosted-tier provider that carries real recurring cost <em>and</em> recurring human toil. Plaid is more convoluted than it first looks — but the convolution is bounded and concentrated in two named units (a health poll + an update-mode re-link). With those, it's a sound second provider.</p>
+
+<div class="key">
+<p><strong>The honest SimpleFIN vs Plaid trade:</strong></p>
+<ul>
+<li><strong>SimpleFIN</strong> — one static access URL covering every bank behind the Bridge; no per-bank Link, no consent expiry, no per-Item billing, no re-auth cadence. Structurally ideal for a single operator's faithful cache.</li>
+<li><strong>Plaid</strong> — breadth-by-effort (one Link auth per bank), an opaque per-Item monthly subscription on paid Production, and an unavoidable ~annual re-consent cliff that makes a long-lived cache silently rot unless we build health-polling + an update-mode UX. Genuinely free for an <em>eligible</em> operator (new US/CA team ≥2026-04-15, ≤10 lifetime Items, ~60s auto-approval) — but that tier is narrow and cliff-edged.</li>
+</ul>
+</div>
+
+<h3>Phasing</h3>
+<ol>
+<li><strong>Land the Hosted Link onboarding (the current spec).</strong> Per-Item <code>external_item_id</code> schema (<code>0006_plaid_app.sql</code>) + multi-item array-aware <code>/link/token/get</code> capture + explicit <code>url_lifetime_seconds</code>. Reconsider <code>days_requested</code> (365 vs 730) <em>before</em> it's frozen per Item.</li>
+<li><strong>Add the two pieces the "read-only" framing hides (own wave).</strong> (a) An <code>/item/get</code> health poll feeding an honest per-connection status into <code>describe_context</code> and the Console; (b) a Console update-mode re-link flow — cheap, since <code>access_token</code>/<code>external_item_id</code> survive re-auth.</li>
+<li><strong>Wire <code>/item/remove</code></strong> into disconnect/erase to stop billing.</li>
+<li><strong>Default balances to free <code>/accounts/get</code></strong>; gate <code>/accounts/balance/get</code> behind throttled <code>fetch_live</code>.</li>
+<li><strong>Keep the loopback no-webhook design</strong> — confirmed correct and a security simplification; accept bounded ~6h freshness (capped by the bank's own 1–4x/day) and reactive break detection.</li>
+<li><strong>Gate release</strong> on a real Production Trial smoke against a real OAuth bank — Sandbox cannot validate institution-specific behavior.</li>
+</ol>
+
+<div class="note"><p><strong>What's safe to skip in V0:</strong> a webhook receiver (deletes the ES256/JWS surface), Plaid Layer (incompatible with Hosted Link), the real-time Balance product as a default, <code>/transactions/enrich</code> (PFC already in sync output), multi-item staggered-polling (single-tenant won't hit limits), LEI handling (stayed to ≥July 2026), an embedded Link widget, and the proactive US/CA PENDING_DISCONNECT warning (detect those reactively). Console copy must lead with: "Plaid only reads banks you link inside <em>this</em> gateway's Link flow — your <code>my.plaid.com</code> connections do not transfer."</p></div>
+</section>
+
+<section id="open-questions">
+<h2 id="open-questions">Open questions &amp; what to live-verify</h2>
+<p><strong>Bottom line:</strong> the access model, lifecycle, and sync semantics are first-hand-confirmed. The residual uncertainties are mostly billing dollar-figures (unobtainable without a Production application) and a handful of edge behaviors worth a Sandbox/Production smoke before claiming dogfood-ready.</p>
+<ul>
+<li><strong>Dollar amounts</strong> for the Transactions monthly per-Item subscription and the per-call Balance fee — unobtainable first-hand; gated behind the Production request form. Docs publish only plan names and "one-time / subscription / per-request" structures.</li>
+<li><strong>Does merely polling <code>/item/get</code> (vs <code>/transactions/sync</code>) incur a per-call charge</strong> on paid teams, and is <code>/accounts/get</code> during sync separately metered? Billing nuance by plan is unverified — affects how aggressively we can health-poll.</li>
+<li><strong>Which Item-creation events increment the Trial 10-Item lifetime counter?</strong> Docs confirm <code>/item/remove</code> doesn't free a slot but don't say whether failed/abandoned Link sessions that still create an Item count. Steer test links to Sandbox as the safe hedge.</li>
+<li><strong>Is update-mode Hosted Link registration-free for OAuth banks</strong> the same way initial Hosted Link is? Confirmed for initial Hosted Link; the update-mode Hosted Link URL flow for OAuth banks was not re-confirmed first-hand.</li>
+<li><strong>Exact in-band shape of <code>/transactions/sync</code> on a broken Item</strong> (succeed-empty vs error in the body) — resolved in practice by the <code>/item/get</code> health poll, but worth a Sandbox <code>/sandbox/item/reset_login</code> test to validate the full break→detect→update-mode→resume loop.</li>
+<li><strong>Does a 429 carry a documented <code>Retry-After</code> / backoff contract?</strong> The rate-limit page gives per-window limits; an explicit <code>Retry-After</code> was not confirmed, so the connector's backoff is currently a guess.</li>
+<li><strong><code>update_type = user_present_required</code></strong> — is there <em>any</em> unattended refresh path, or only periodic user-present re-Link? Determines whether such banks are viable for a cadence-synced cache at all.</li>
+<li><strong>Per-institution consent-expiry durations</strong> beyond the confirmed Capital One (1yr) / Fidelity (12mo) / BoA-new-API (12mo), and whether non-OAuth credential-based Items ever get a non-null <code>consent_expiration_time</code>.</li>
+<li><strong>Does <code>completion_redirect_uri</code> to a loopback URL work under <code>env=production</code></strong> without prior Dashboard registration? Polling is the safe fallback regardless, but verify before relying on auto-return.</li>
+<li><strong>Bank of America 2026 migration scope</strong> — exact timeline per region, and whether it touches Sandbox; the runbook needs specifics.</li>
+</ul>
+</section>
+    </main>
+  </div>
+</body>
+</html>

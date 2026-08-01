@@ -1,0 +1,33 @@
+// The EMIT config. `npm run build` (and therefore the Dockerfile) compiles with THIS file; the root
+// tsconfig.json stays the CHECK config and keeps `include: ["src"]` with no exclude.
+//
+// Why two files instead of one exclude in the root: `npm run typecheck`, CI, and
+// .claude/hooks/typecheck.sh all run `tsc --noEmit` against the ROOT config. Putting these excludes
+// there would silently stop type-checking 147 test/fixture/conformance files — the tests would still
+// RUN (vitest has its own resolution) but a type error in one would no longer be caught by any gate.
+// The check must stay wide and the emit must stay narrow, so the two configs must diverge.
+// Mutation that proves the split holds: a type error in any *.test.ts reds `npm run typecheck` and
+// does NOT red `npm run build`.
+//
+// What is excluded and why each pattern is needed:
+//   *.test.ts / *.fixtures.ts / *.conformance.ts — test bodies, canned provider payloads, and the
+//     per-connector conformance fixture modules. None is imported by production code (verified).
+//   src/sdk/conformance.ts — the Vitest-integrating conformance HARNESS. It `import`s "vitest", a
+//     devDependency the runner image does not install (`npm ci --omit=dev`), so shipping it put a
+//     module in dist/ that could only ever throw MODULE_NOT_FOUND.
+//   src/sdk/index.ts — the SDK barrel. It RE-EXPORTS ./conformance.js, and `exclude` does not stop
+//     tsc emitting a file that an included file imports: leaving the barrel in would drag the
+//     harness back into dist/ regardless of the line above. Nothing outside *.conformance*.ts and
+//     *.test.ts imports the barrel (verified by grep over src/, apps/, scripts/), so dropping it
+//     from the emit costs the runtime nothing. `src/sdk/contract.ts` — the types real connectors
+//     import — is NOT excluded and still compiles.
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.fixtures.ts",
+    "src/**/*.conformance.ts",
+    "src/sdk/conformance.ts",
+    "src/sdk/index.ts"
+  ]
+}

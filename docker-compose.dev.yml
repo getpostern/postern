@@ -1,0 +1,51 @@
+# Postern — the contributor overlay. Builds the image from THIS checkout instead of pulling the
+# published one, and adds a log viewer behind a profile.
+#
+#     docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# An OVERLAY, not a replacement: compose merges the files left to right, so everything in
+# docker-compose.yml still applies — the loopback-only publishes, the vault-key volume, the
+# healthchecks, POSTGRES_PASSWORD still being required. This file changes exactly two things.
+#
+# WHY THIS SPLIT EXISTS. The quickstart must be a pull, not a toolchain: someone trying Postern for
+# the first time should not need a working build environment to see the Console. But a contributor's
+# whole point is running the code they just edited, and `image:` would silently serve them the last
+# published release while their change sat unbuilt in the working tree. Two files, two audiences, no
+# flag to get wrong.
+
+services:
+  app:
+    # Build from this checkout. `build:` and `image:` together mean "build it and TAG it that" — so
+    # the tag is a local tag pointing at your build, and `docker compose pull` will not quietly
+    # replace it with the registry's copy of the same name. Nothing here is pushed anywhere.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "postern:dev"
+    # Rebuild is not automatic. `up -d` reuses the image it already has, which is how an edit gets
+    # tested against yesterday's build; pass `--build` (as the command at the top does) whenever you
+    # want your change in the container.
+
+  # ── Log viewer (OPT-IN) ──────────────────────────────────────────────────────────────────────────
+  # Dozzle: tail every container's logs in a browser at http://localhost:9999. Loopback-only, and it
+  # mounts the Docker socket READ-ONLY.
+  #
+  # It sits behind the `debug` profile, so even with this file loaded a bare `up` never starts it:
+  #     docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile debug up -d logs
+  #
+  # ⚠️ Mounting the Docker socket into a container is equivalent to giving that container root on the
+  # host, read-only mount or not. That is why it is opt-in, why it is pinned by digest below rather
+  # than by a moving tag, and why it is in the CONTRIBUTOR file and not in the quickstart.
+  logs:
+    image: amir20/dozzle:v10.6.11@sha256:bc1ee4ba8d66c7fc0d03823a78486165fb219809f79eaf54cecf3114d647ab14
+    profiles: ["debug"]
+    restart: unless-stopped
+    environment:
+      DOZZLE_NO_ANALYTICS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      # Loopback-only, and a knob for the same reason the gateway's ports are knobs: 9999 is busy
+      # often enough that "something else holds it" must not be a reason to edit a tracked file.
+      # 8080 is Dozzle's own port inside the container and is not configurable from here.
+      - "127.0.0.1:${DOZZLE_HOST_PORT:-9999}:8080"

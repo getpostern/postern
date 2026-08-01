@@ -1,0 +1,60 @@
+{
+  "name": "postern",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Postern \u2014 the Personal Context Gateway: connect the sectors of your life once, then read them and act on them from any agent through one neutral surface.",
+  "license": "AGPL-3.0-or-later",
+  "homepage": "https://github.com/getpostern/postern#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getpostern/postern.git"
+  },
+  "bugs": {
+    "url": "https://github.com/getpostern/postern/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "setup": "npm ci && npm ci --prefix apps/web",
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:db": "bash scripts/test-db.sh",
+    "test:db:file": "bash scripts/test-db.sh",
+    "migrate": "tsx src/db/migrate.ts",
+    "migrate:status": "tsx src/db/migrate.ts status",
+    "db:up": "docker compose up -d",
+    "db:schema": "docker compose exec -T db psql -U pci -d pci -f - < db/schema.sql",
+    "lint": "eslint .",
+    "format": "prettier -w .",
+    "rotate": "tsx src/secrets/rotate.ts",
+    "test:db:reap": "bash scripts/test-db.sh --reap"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "ical.js": "^2.2.1",
+    "imapflow": "^1.4.0",
+    "pg": "^8.13.0",
+    "tsdav": "^2.3.1",
+    "vcard4": "^4.0.5",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "@types/ws": "^8.5.0",
+    "eslint": "^9.39.4",
+    "globals": "^17.7.0",
+    "prettier": "^3.8.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.61.0",
+    "vitest": "^3.2.6"
+  }
+}

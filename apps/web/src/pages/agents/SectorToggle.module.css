@@ -1,0 +1,76 @@
+/* SectorToggle — values ported from Paper 5KL-0 (mint), 5US-0 (detail), 2IG-0/5QR-0 (recap). */
+
+/* The interactive toggle (mint / detail). */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 15px;
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+/* ON: the sector's own ink at 1.5px, raised ground, ink label. `--toggle-ink` is set per sector. */
+.toggle[data-on] {
+  border-width: 1.5px;
+  border-color: var(--toggle-ink);
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+}
+
+.toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.label {
+  white-space: nowrap;
+}
+
+/* The specimen sits in a fixed slot so labels form one lane across a wrapped grid. */
+.chipSlot {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+}
+
+/* The recap chip (register cell / reveal "Opens"). */
+.recap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recapLabel {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+/* Per-sector ink — one ink per sector, never borrowed (soul; tokens.css). */
+.toggle[data-sector="finance"] {
+  --toggle-ink: var(--sector-finance);
+}
+.toggle[data-sector="mail"] {
+  --toggle-ink: var(--sector-mail);
+}
+.toggle[data-sector="calendar"] {
+  --toggle-ink: var(--sector-calendar);
+}
+.toggle[data-sector="contacts"] {
+  --toggle-ink: var(--sector-contacts);
+}
+.toggle[data-sector="health"] {
+  --toggle-ink: var(--sector-health);
+}
+.toggle[data-sector="home"] {
+  --toggle-ink: var(--sector-home);
+}

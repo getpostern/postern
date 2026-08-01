@@ -1,0 +1,22 @@
+/* ReadActNote — the italic clarifying line beneath a grant grid (#79). */
+
+.note {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+  max-width: 720px;
+}
+
+.note strong {
+  color: var(--color-ink);
+  font-weight: var(--weight-medium);
+  font-style: normal;
+}
+
+.note em {
+  font-style: normal;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

@@ -1,0 +1,22 @@
+// The CHECK config: `npm run typecheck`, CI and .claude/hooks/typecheck.sh all run against this
+// file, so `include: ["src"]` is deliberately WIDE — every test, fixture and conformance module is
+// type-checked here. NEVER add an `exclude` to this file to keep test code out of dist/: that
+// un-type-checks 147 files at once and the loss is silent (vitest resolves them anyway, so the
+// suite stays green while nothing checks their types). The EMIT narrowing lives in
+// tsconfig.build.json, which extends this one and is what `npm run build` compiles.
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["node"]
+  },
+  "include": ["src"]
+}

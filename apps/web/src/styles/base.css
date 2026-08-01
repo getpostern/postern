@@ -1,0 +1,126 @@
+/* Postern Console — the base stylesheet.
+ *
+ * The paper ground, the reset, ONE focus ring, the a11y utilities, and one global
+ * reduced-motion guard. Everything below is either the landing's implementation
+ * (`posternLandingPage/site/css/main.css`) or a rule the spec names.
+ *
+ * There is NO night variant. The soul (§4) says the paper world is the ground and a night
+ * variant, if it ever exists, is DERIVED from it — never the reverse. Nothing here reads
+ * `prefers-color-scheme` or `[data-theme]`.
+ *
+ * Component styling is CSS Modules, colocated (`X.module.css` beside `X.tsx`); inline
+ * `style={{…}}` is banned for anything a stylesheet can express. That is the structural
+ * fix for #67 (no breakpoints were possible) and #69 (no focus states were possible),
+ * not a preference — see ADR 0031.
+ */
+
+/* ---------- reset ---------- */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  /* Real cuts only. A synthesised bold on a Garamond is exactly the kind of wrongness
+     this design would notice. */
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* ---------- the one focus ring ----------
+ * Declared ONCE, globally, and inherited. Before this file there was not a single
+ * `:focus-visible` style in the entire Console (#69). A component that re-declares this
+ * ring is drift; a component that removes it is a defect. */
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+/* ---------- a11y utilities (from the landing) ---------- */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  padding: 10px 16px;
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* ---------- layout ground ----------
+ * `--container-content` is a MAX-width, and the rule still binds everywhere: the shell is fluid, and
+ * nothing may hard-code a 1440 layout that the later mobile-reflow pass would have to unpick (#67).
+ * `styles/contrast.test.ts` enforces it across every stylesheet.
+ *
+ * There is NO `.container` helper here (#95 item 7). One existed and had zero users tree-wide — the
+ * three page shells that bound their width (`pages/lenses/lens.module.css`,
+ * `pages/sources/SourcesPage.module.css`, `pages/sources/ConnectionDetail.module.css`) each set
+ * `max-width: var(--container-content)` in their own module, which is where a layout bound belongs
+ * under the colocated-CSS rule (ADR 0031). A global class nobody applies is not a ground rule, it is
+ * a second way to do the same thing, waiting. */
+
+/* ---------- motion ----------
+ * The design has no motion by intent — matter, not energy (soul §6/§7). This is therefore
+ * a GUARD, not a feature: if anything ever animates, reduced-motion neutralises it globally
+ * rather than per-component. Today's Console honours the setting only for the logo spin (#39). */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

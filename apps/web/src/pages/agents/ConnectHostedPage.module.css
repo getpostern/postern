@@ -1,0 +1,195 @@
+/* Connect a hosted client (claude.ai, ChatGPT) — values ported from Paper 5XS-0. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  padding-bottom: 32px;
+}
+
+.body {
+  display: flex;
+  gap: 56px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* Steps. */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  flex: 1 1 420px;
+  max-width: 520px;
+}
+
+.step {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+}
+
+.stepNum {
+  flex-shrink: 0;
+  width: 20px;
+  color: var(--color-seal);
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 26px;
+}
+
+.stepBody {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 23px;
+}
+
+/* The two ways out of step 1 — this Console's Remote-access screen, and the full field guide on the
+   public site. A wrapping row, not two block links: they are alternatives, not a sequence. The link
+   treatment is the agents group's existing one (.pathLink, .revealLink) — seal ink, body face. */
+.stepLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  padding-top: 6px;
+}
+
+.stepLink {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.note {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 19px;
+  max-width: 500px;
+}
+
+/* The bridge card. */
+.card {
+  flex: 0 1 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-lg);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statusDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--state-idle);
+}
+.statusDot[data-tone="ok"] {
+  background: var(--state-ok);
+}
+
+.statusText {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 18px;
+}
+
+.statusHint {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: var(--color-ink-a22);
+}
+
+.pasteBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pasteLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.pasteRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pasteValue {
+  flex-grow: 1;
+  min-width: 0;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+/* The operator-supplied pattern, shown when the configured endpoint can't be reached from the
+   cloud: .pasteValue's treatment without `flex-grow` — it is not a row item and not copyable. */
+.pattern {
+  min-width: 0;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+/* Why this endpoint is (or isn't) reachable — .statusHint's treatment. */
+.targetNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: var(--weight-medium);
+  line-height: 16px;
+}
+
+.caveat {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 19px;
+}

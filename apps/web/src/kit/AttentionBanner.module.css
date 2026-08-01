@@ -1,0 +1,59 @@
+/* AttentionBanner — the same shell everywhere it appears; only the cause, detail and button
+ * change, and all three come from the page (never a custody flow this component picks itself —
+ * program plan §3). Ported from the states sheet's `banner-static-token` (`FEA-0`). */
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--color-paper-raised);
+  border-left: 3px solid var(--color-seal);
+  border-radius: var(--radius-md);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cause {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: var(--weight-semibold);
+  line-height: 22px;
+}
+
+.detail {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+.note {
+  flex-shrink: 0;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.action {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border: 1px solid var(--color-seal);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}

@@ -1,0 +1,24 @@
+/* ConfirmOverlay — a dim backdrop centring the frozen ConfirmBar. No motion by design (matter, not
+ * energy). Colours are ink alphas on the paper ground; nothing new gets colour. */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: var(--color-ink-a40);
+}
+
+.panel {
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--space-6);
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-lg);
+}

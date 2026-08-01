@@ -1,0 +1,123 @@
+/* ConfirmBar — the typed destructive confirm (#70). There is no window.confirm anywhere in this
+ * app; this is its replacement. Ported from `Erase data (confirm)` (`640-0`). */
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 900px;
+}
+
+.consequence {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 22px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-left: 3px solid var(--color-seal);
+  border-radius: var(--radius-md);
+}
+
+.consequenceTitle {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 20px;
+}
+
+.blast {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.exportRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.exportLead {
+  flex-grow: 1;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 19px;
+}
+
+.exportBtn {
+  flex-shrink: 0;
+  padding: 9px 20px;
+  background: transparent;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 18px;
+}
+
+.typedBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.typedLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.typedInput {
+  box-sizing: border-box;
+  height: 44px;
+  max-width: 320px;
+  padding: 0 16px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.confirm {
+  padding: 11px 26px;
+  background: var(--color-seal);
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 19px;
+}
+.confirm:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.cancel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}

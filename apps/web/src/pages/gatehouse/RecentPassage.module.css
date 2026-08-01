@@ -1,0 +1,155 @@
+/* Recent passage — the event feed. Ported from `9HI-0`. Fixed-width lanes so the columns align
+ * across rows regardless of content (the design's own rule). */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 6px;
+}
+
+.title {
+  flex-shrink: 0;
+  color: var(--color-ink-soft);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.hairline {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--color-rule);
+}
+
+.more {
+  flex-shrink: 0;
+  color: var(--color-seal);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+.more:hover {
+  color: var(--color-seal-deep);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--color-ink-a15);
+}
+.row:last-child {
+  border-bottom: 1px solid var(--color-ink-a15);
+}
+
+.time {
+  flex-shrink: 0;
+  width: 68px;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.agent {
+  flex-shrink: 0;
+  width: 92px;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tool {
+  flex-shrink: 0;
+  width: 118px;
+  color: var(--color-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.sector {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sectorName {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+.args {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Exceptions-only: `admitted` renders nothing. The two exceptions are inline right after the args,
+ * never a badge — and they carry the SAME two inks the ledger uses (build-notes §17.5, and
+ * `records/DecisionPill.module.css`): a refusal is poppy, a failure is marigold.
+ *
+ * They were briefly one class. When the glance moved from `row.decision === "deny"` to the full
+ * `decisionState()`, `errored` started reaching a lane drawn for the deny alone and was painted in
+ * the refusal ink — so the Gatehouse said "denied" in colour while the ledger two clicks away said
+ * "errored", which is the exact distinction #78 exists to draw. Caught at review 2026-07-25. */
+.exception {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}
+.denied {
+  color: var(--color-seal);
+}
+.errored {
+  color: var(--state-attention);
+}
+
+.empty {
+  padding: 12px 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+}

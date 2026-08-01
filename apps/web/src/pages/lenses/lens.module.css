@@ -1,0 +1,41 @@
+/* The sector-lens page frame — the five bands stacked with the artboards' band-to-band rhythm. Fluid
+ * width up to the content container; the AppShell owns the outer padding. No fixed 1440 assumption
+ * (#67) — the bands reflow at the --breakpoint-lg boundary via each band's own media query. */
+
+.lens {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  width: 100%;
+  max-width: var(--container-content);
+}
+
+/* --lens-ink = this sector's own ink. Consumed by the CAN-READ agent dot (AgentsBand), which the
+ * plate draws in the sector colour. Set here on the lens root so the whole lens can key off it. */
+.lens[data-sector="finance"] {
+  --lens-ink: var(--sector-finance);
+}
+.lens[data-sector="health"] {
+  --lens-ink: var(--sector-health);
+}
+.lens[data-sector="mail"] {
+  --lens-ink: var(--sector-mail);
+}
+.lens[data-sector="contacts"] {
+  --lens-ink: var(--sector-contacts);
+}
+.lens[data-sector="calendar"] {
+  --lens-ink: var(--sector-calendar);
+}
+.lens[data-sector="home"] {
+  --lens-ink: var(--sector-home);
+}
+
+/* THE SOURCES and the confirm-a-merge block sit in one region (the block nests under the sources on
+ * the artboard); a tighter gap keeps them visually joined. */
+.sourcesRegion {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}

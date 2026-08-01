@@ -1,0 +1,141 @@
+/* Sector-lens masthead extras — the specimen+name title that fills the frozen <Masthead> verdict
+ * slot, and the right-hand block (Last synced · Sync now · transport caption). Ported from the lens
+ * masthead (IA-0): the 46px display name, the outlined Sync-now button, the mono caption. */
+
+/* The hero title — the artboards' `Title` frame: specimen, then a 2px column of the display name over
+ * the Latin binomial. Every value read off the lens artboards with get_computed_styles. */
+.title {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.titleText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: var(--weight-medium);
+  line-height: 100%;
+  letter-spacing: var(--tracking-tight);
+}
+
+.latin {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-style: italic;
+  line-height: 20px;
+  letter-spacing: normal;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.clockLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.clockValue {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.syncBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.syncBtn:disabled {
+  cursor: default;
+  color: var(--color-faded);
+  border-color: var(--color-ink-a22);
+}
+
+/* The DRAWN-AND-DISABLED idiom, same vocabulary as the inspector's bearer-gated schema preview
+ * (InspectorPage.module.css `.degradedBtn` / `.degradedReason`) rather than a third look: the
+ * affordance stays visible and struck through, and its reason sits beside it in faded body copy. */
+.syncBtnDead {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* The disabled button's reason — "Nothing to sync — no source is connected here yet." (#106 §3).
+ * It was 12.5px italic. 12.5px is not a step on the token scale (11 → 13), and Paper uses it only for
+ * dense mono/data lines — 81 nodes carry it and not one is italic; there is no italic node anywhere in
+ * the file below 13px. This is a whole sentence explaining a control a person just tried to press, so
+ * it takes the smallest real body step, upright. `contrast.test.ts` now holds the floor. */
+.syncDisabledReason {
+  max-width: 260px;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: right;
+}
+
+@media (max-width: 1024px) {
+  .syncDisabledReason {
+    text-align: left;
+  }
+}
+
+.caption {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+  text-align: right;
+}
+
+@media (max-width: 1024px) {
+  .name {
+    font-size: 36px;
+  }
+  .right {
+    align-items: flex-start;
+  }
+  .clock {
+    align-items: flex-start;
+  }
+  .caption {
+    text-align: left;
+  }
+}

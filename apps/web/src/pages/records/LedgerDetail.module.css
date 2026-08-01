@@ -1,0 +1,116 @@
+/* The per-row drill (#78) — an in-flow entry card that opens when a ledger row is activated. Shows
+ * the whole record truthfully: decision (third state), deny_reason, outcome, result_count,
+ * request_id, and the pretty-printed args. It mirrors, it never summarises. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.kicker {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.close {
+  padding: 4px 10px;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+/* A two-column field grid — label lane fixed, value fluid. */
+.grid {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 10px 20px;
+  align-items: baseline;
+}
+
+.label {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.value {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  min-width: 0;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--color-ink);
+  word-break: break-all;
+}
+
+.faded {
+  color: var(--color-faded);
+}
+
+.sectorCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sectorName {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--color-ink);
+}
+
+/* The args block — verbatim, monospaced, scrolls inside itself so the card never widens the page. */
+.argsLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  line-height: 14px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.argsBlock {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a15);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}

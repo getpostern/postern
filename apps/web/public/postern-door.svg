@@ -1,0 +1,10 @@
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Postern">
+  <!-- The identity mark — the door (locked-assets plate §V): ink arch + amber seam, byte-faithful
+       to the vector in src/marks/NavMark.tsx. On the paper ground so it reads in light AND dark
+       browser chrome. No glow, no gradient (soul §6 bans them as physics). -->
+  <rect width="48" height="48" rx="6" fill="#F5EDDA" />
+  <g transform="translate(8 4)">
+    <path d="M4 38 L4 16 Q4 4 16 4 Q28 4 28 16 L28 38 Z" fill="#2A2118" />
+    <path d="M18 38 L18 13 Q18 8.5 22.5 7.6 L22.5 38 Z" fill="#E7A42A" />
+  </g>
+</svg>

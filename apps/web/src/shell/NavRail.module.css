@@ -1,0 +1,158 @@
+/* NavRail — the ONE nav rail. Values ported from the Gatehouse artboard's rail (`2-0`),
+ * app file 01KY3S7JMA16R0QZVSX084WWDD, via get_jsx({format:"inline-styles"}). The 47 Paper
+ * copies are a tool limitation; this is the single canonical rail (console-port-plan §7 law 5).
+ *
+ * Residual #2 (console-shell.md): every icon sits in a FIXED-WIDTH slot so the text lane never
+ * drifts — the pollinator is 19 wide against the line marks' 17 and the sector chips' 15, which
+ * on the Agents row alone reads as sloppiness rather than as a bug. The slot is the fix. */
+
+.rail {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: 238px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px 18px;
+  background: var(--color-paper);
+  border-right: 1px solid var(--color-rule);
+}
+
+/* The brand lockup owns its own gap/padding (marks/NavMark.module.css .lockup). */
+.brand {
+  display: block;
+}
+
+.rule {
+  flex-shrink: 0;
+  height: 1px;
+  margin: 20px 8px 16px;
+  background: var(--color-rule);
+}
+
+.group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sectionLabel {
+  padding: 18px 10px 8px;
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px; /* measured on rail items J-0/13-0/B-0 (design-law review) */
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+/* The Gatehouse (home) item is drawn 1px taller than the sector/gate items (node B-0). */
+.item[data-home="true"] {
+  padding-block: 8px;
+}
+
+/* Fixed-width icon lane — the residual-#2 fix. 20px accommodates the 19px pollinator and
+ * centres every smaller mark, so the label always starts at the same x. */
+.iconSlot {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: var(--weight-regular);
+  color: var(--color-ink-soft);
+}
+
+/* Active — every item gains the raised ground; the label firms to full ink and medium weight. */
+.item[data-active="true"] {
+  background: var(--color-paper-raised);
+}
+.item[data-active="true"] .label {
+  color: var(--color-ink);
+  font-weight: var(--weight-medium);
+}
+
+/* The Gatehouse is the home item — active it carries the seal bar and the heavier cut. */
+.item[data-active="true"][data-home="true"] .label {
+  font-weight: var(--weight-semibold);
+}
+
+.sealBar {
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--color-seal);
+}
+
+.spacer {
+  flex-grow: 1;
+  min-height: 20px;
+}
+
+.gateStatus {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 11px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+}
+
+.gateDot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--state-idle);
+}
+.gateDot[data-tone="ok"] {
+  background: var(--state-ok);
+}
+.gateDot[data-tone="error"] {
+  background: var(--state-error);
+}
+
+.gateBody {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.gateTitle {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
+  line-height: 125%;
+}
+
+.gateSub {
+  margin-top: 1px;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 125%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,16 @@
+node_modules
+dist
+.env
+*.log
+.DS_Store
+.obsidian/
+.pci/
+
+# The exposure-docs guard's OPTIONAL exact-token list (src/docs/exposure-docs.test.ts). It holds the
+# real machine names, tailnet ids and secret fragments of whichever box this checkout is on, so the
+# guard can catch them EXACTLY — a bare hostname in a runbook has no shape for a pattern to match.
+# It must NEVER be committed: a committed token list, or a digest of one (8 hex brute-forces in
+# milliseconds), publishes exactly what it exists to keep private. Absent is the normal case — CI and
+# every clone run the shape rules alone.
+.exposure-tokens.local
+

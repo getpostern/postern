@@ -1,0 +1,286 @@
+/* THE SOURCES band — ported from the finance/mail/home lens sources (J8-0 / U4-0 / 1BJ-0). Band-head
+ * small-caps + hairline + italic gloss; per-connection rows with fixed trailing lanes; and the
+ * finance-only institution run + dedup note + dedup-trust flags. Fixed-width trailing slots keep the
+ * count / cadence / freshness / Manage lanes aligned across rows (never gap alone). */
+
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 14px;
+  width: 100%;
+}
+
+.headLabel {
+  flex-shrink: 0;
+  color: var(--color-ink);
+  font-family: var(--font-sc);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.hairline {
+  flex: 1 1 0;
+  height: 1px;
+  background: var(--color-ink-a22);
+}
+
+.headGloss {
+  flex-shrink: 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 16px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--color-ink-a22);
+  width: 100%;
+}
+
+.iconSlot {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rowLead {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 16px;
+}
+
+.rowName {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: var(--weight-medium);
+  line-height: 20px;
+}
+
+.rowSub {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+  overflow-wrap: anywhere;
+}
+
+.rowCount {
+  flex-shrink: 0;
+  width: 130px;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.rowTransport {
+  flex-shrink: 0;
+  width: 150px;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.rowFresh {
+  flex-shrink: 0;
+  width: 96px;
+  display: flex;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.freshClock {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.freshBadge {
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.freshBadge[data-tone="error"] {
+  color: var(--state-error);
+}
+.freshBadge[data-tone="attention"] {
+  color: var(--state-attention);
+}
+.freshBadge[data-tone="idle"] {
+  color: var(--state-idle);
+}
+.freshBadge[data-tone="ok"] {
+  color: var(--state-ok);
+}
+
+.rowManage {
+  flex-shrink: 0;
+  width: 96px;
+  text-align: right;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+  border-radius: var(--radius-sm);
+}
+
+/* Finance: the institution run. */
+
+.institutions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 20px;
+  row-gap: 10px;
+  padding-top: 16px;
+  padding-bottom: 2px;
+  width: 100%;
+}
+
+.institution {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.institutionName {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.instMore {
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 20px;
+  border-radius: var(--radius-sm);
+}
+
+/* Finance: the merged-provenance note (finance ink, evidence — not a warning). */
+
+.dedupNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.dedupDot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sector-finance);
+}
+
+.dedupText {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 16px;
+}
+
+/* Finance: dedup-trust flags — asymmetric on purpose (colour tracks "is there something to do"). */
+
+.trustRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.trustDotAttention {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--state-attention);
+}
+
+.trustDotIdle {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--state-idle);
+}
+
+.trustText {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.trustTextFaded {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+/* The confirm-a-merge affordance — ink outline, never a seal (an offer, not a demand — §12.3). */
+.trustAction {
+  padding: 4px 12px;
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+/* Non-finance: the quiet footprint caption under the rows. */
+.footprintNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 16px;
+  padding-top: 12px;
+}
+
+@media (max-width: 1024px) {
+  .rowTransport {
+    display: none;
+  }
+  .rowCount {
+    width: 96px;
+  }
+}

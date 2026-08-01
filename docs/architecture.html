@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Context Gateway — Architecture</title>
+<style>
+  :root{
+    --paper:#e8edf1;--paper-2:#eef2f5;--panel:#f4f7f9;
+    --ink:#16212a;--ink-soft:#4d5e69;--ink-faint:#8294a0;
+    --line:#c5d2db;--line-2:#d6e0e7;
+    --blue:#1f53c9;--blue-deep:#173f96;--blue-wash:#dde6f7;
+    --amber:#b5560c;--amber-wash:#f1e2cf;
+    --green:#1d6b4f;--green-wash:#dcebe5;
+    --red:#8f2e2e;--red-wash:#eddada;
+    --code-bg:#15202a;--code-fg:#d7e0e7;
+    --serif:"Iowan Old Style","Charter","Palatino Linotype",Georgia,"Times New Roman",serif;
+    --sans:"Avenir Next","Optima","Gill Sans MT",Futura,"Helvetica Neue",sans-serif;
+    --mono:"SF Mono","Menlo","Monaco","Roboto Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--serif);font-size:17.5px;line-height:1.62;
+    background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:28px 28px;background-position:-1px -1px;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 50% 0%,rgba(232,237,241,0) 0%,var(--paper) 78%);}
+  .wrap{max-width:55rem;margin:0 auto;padding:0 1.6rem;position:relative;z-index:1;}
+  .narrow{max-width:43rem;}
+  ::selection{background:var(--blue);color:#fff;}
+  header.top{border-bottom:1.5px solid var(--ink);background:rgba(232,237,241,.9);backdrop-filter:blur(6px);position:sticky;top:0;z-index:40;}
+  .top .wrap{display:flex;justify-content:space-between;align-items:center;padding:.85rem 1.6rem;}
+  .mark{font-family:var(--mono);font-size:.74rem;letter-spacing:.04em;font-weight:600;text-transform:uppercase;}
+  .mark b{color:var(--blue);}
+  .top .meta{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--ink-faint);text-transform:uppercase;}
+  .hero{padding:5rem 0 3.2rem;}
+  .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--blue);display:flex;align-items:center;gap:.8rem;margin-bottom:2rem;}
+  .tag::after{content:"";height:1px;flex:1;max-width:6rem;background:var(--blue);opacity:.45;}
+  h1{font-size:clamp(2.2rem,5.6vw,3.5rem);line-height:1.05;font-weight:400;letter-spacing:-.015em;margin:0 0 1.4rem;}
+  h1 .b{color:var(--blue);}
+  .lede{font-size:clamp(1.08rem,2.2vw,1.32rem);line-height:1.46;color:var(--ink-soft);max-width:42rem;}
+  .lede b{color:var(--ink);font-weight:600;}
+  .statusbar{margin-top:2rem;display:flex;flex-wrap:wrap;gap:.5rem;font-family:var(--mono);font-size:.68rem;}
+  .statusbar span{border:1px solid var(--line);background:var(--panel);color:var(--ink-soft);padding:.3rem .7rem;border-radius:2px;letter-spacing:.04em;}
+  .statusbar span b{color:var(--blue-deep);}
+  section{padding:3.2rem 0;border-top:1px solid var(--line);}
+  .sec-no{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:1.1rem;}
+  .sec-no b{color:var(--blue);}
+  h2{font-size:clamp(1.55rem,3.4vw,2.2rem);line-height:1.12;font-weight:400;letter-spacing:-.01em;margin:0 0 1.1rem;}
+  h3{font-family:var(--sans);font-size:1.02rem;font-weight:600;margin:2.1rem 0 .5rem;letter-spacing:.005em;}
+  h4{font-family:var(--mono);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin:1.7rem 0 .5rem;}
+  p{margin:0 0 1.1rem;}
+  strong{font-weight:600;}
+  blockquote{margin:1.3rem 0;padding:.2rem 0 .2rem 1.1rem;border-left:3px solid var(--line);color:var(--ink-soft);font-style:italic;}
+  code.inl{font-family:var(--mono);font-size:.84em;background:var(--paper-2);border:1px solid var(--line);border-radius:2px;padding:.03em .3em;}
+  pre{font-family:var(--mono);font-size:.73rem;line-height:1.55;background:var(--code-bg);color:var(--code-fg);padding:1.1rem 1.2rem;border-radius:4px;overflow-x:auto;margin:1.3rem 0;border:1px solid #283643;}
+  pre .c{color:#7f93a3;}
+  pre .kw{color:#7fb0ff;}
+  pre .ty{color:#e3b778;}
+  .tbl{margin:1.4rem 0;overflow-x:auto;border:1px solid var(--line);border-radius:4px;}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;background:var(--panel);}
+  th{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;text-align:left;color:var(--ink-soft);background:var(--paper-2);padding:.6rem .8rem;border-bottom:1.5px solid var(--line);font-weight:600;}
+  td{padding:.58rem .8rem;border-bottom:1px solid var(--line-2);vertical-align:top;font-family:var(--sans);line-height:1.42;}
+  tr:last-child td{border-bottom:none;}
+  td.m,th.m{font-family:var(--mono);font-size:.73rem;}
+  .note{border-left:3px solid var(--blue);background:var(--paper-2);padding:1rem 1.2rem;margin:1.5rem 0;border-radius:0 3px 3px 0;}
+  .note.amber{border-color:var(--amber);}
+  .note.green{border-color:var(--green);}
+  .note.red{border-color:var(--red);}
+  .note .nt{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--blue-deep);font-weight:600;margin-bottom:.4rem;}
+  .note.amber .nt{color:var(--amber);}
+  .note.green .nt{color:var(--green);}
+  .note.red .nt{color:var(--red);}
+  .note p{margin:0;font-size:.94rem;line-height:1.5;}
+  .badge{font-family:var(--mono);font-size:.62rem;font-weight:600;letter-spacing:.06em;border-radius:2px;padding:.1rem .42rem;display:inline-block;white-space:nowrap;}
+  .badge.in{background:var(--green-wash);color:var(--green);border:1px solid var(--green);}
+  .badge.out{background:var(--red-wash);color:var(--red);border:1px solid var(--red);}
+  .badge.later{background:var(--amber-wash);color:var(--amber);border:1px solid var(--amber);}
+  /* principles */
+  ol.principles{counter-reset:p;list-style:none;margin:1.6rem 0;padding:0;}
+  ol.principles li{counter-increment:p;position:relative;padding:.85rem 0 .85rem 3rem;border-top:1px solid var(--line-2);font-family:var(--sans);font-size:.95rem;line-height:1.5;}
+  ol.principles li:first-child{border-top:none;}
+  ol.principles li::before{content:counter(p,decimal-leading-zero);position:absolute;left:0;top:.95rem;font-family:var(--mono);font-size:.74rem;color:var(--blue);font-weight:600;}
+  ol.principles li b{color:var(--ink);font-weight:600;}
+  ul.tight{margin:.6rem 0 1.2rem;padding-left:1.1rem;}
+  ul.tight li{margin:.34rem 0;font-family:var(--sans);font-size:.92rem;line-height:1.46;}
+  ul.tight li::marker{color:var(--blue);}
+  /* diagram */
+  figure{margin:2rem 0;}
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1.4rem;}
+  figcaption{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-faint);text-align:center;margin-top:.9rem;}
+  svg.dg{width:100%;height:auto;display:block;}
+  .dg text{font-family:var(--mono);fill:var(--ink);}
+  .dg .bx{fill:var(--panel);stroke:var(--blue);stroke-width:1.3;}
+  .dg .bx2{fill:#fff;stroke:var(--line);stroke-width:1.2;}
+  .dg .bxb{fill:var(--blue-wash);stroke:var(--blue);stroke-width:1.4;}
+  .dg .bxg{fill:var(--green-wash);stroke:var(--green);stroke-width:1.4;}
+  .dg .bxm{fill:var(--amber-wash);stroke:var(--amber);stroke-width:1.3;}
+  .dg .ln{stroke:var(--ink-faint);stroke-width:1.1;fill:none;}
+  .dg .lnb{stroke:var(--blue);stroke-width:1.4;fill:none;}
+  .dg .lna{stroke:var(--amber);stroke-width:1.2;fill:none;stroke-dasharray:4 3;}
+  .dg .t{font-size:11px;}
+  .dg .ts{font-size:8.5px;fill:var(--ink-soft);}
+  .dg .tk{font-size:8.5px;fill:var(--blue-deep);letter-spacing:.04em;}
+  .dg .ta{font-size:8.5px;fill:var(--amber);}
+  .toc{font-family:var(--sans);font-size:.9rem;columns:2;column-gap:2rem;margin:1.4rem 0 0;}
+  .toc a{color:var(--ink-soft);text-decoration:none;display:block;padding:.18rem 0;border-bottom:1px solid transparent;}
+  .toc a:hover{color:var(--blue-deep);border-bottom-color:var(--line);}
+  .toc a b{font-family:var(--mono);font-size:.72rem;color:var(--blue);margin-right:.5rem;}
+  footer{padding:3rem 0 4rem;border-top:1px solid var(--line);text-align:center;}
+  footer .big{font-size:1.4rem;line-height:1.3;max-width:32rem;margin:0 auto 1rem;}
+  footer .sub{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  footer .sub a{color:var(--ink-soft);}
+  @media(max-width:640px){body{font-size:16px;background-size:22px 22px;}.toc{columns:1;}.top .wrap{flex-direction:column;align-items:flex-start;gap:.5rem;}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="mark">Personal&nbsp;Context&nbsp;Gateway&nbsp;·&nbsp;<b>Architecture</b></div>
+    <div class="meta">V1 / Beta · Jun 2026</div>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <section class="hero" style="border-top:none;">
+    <div class="tag">Architecture · the contract for contributors</div>
+    <h1>One engine. <span class="b">Borrow at the edges,<br>own the core.</span></h1>
+    <p class="lede"><b>Connect the sectors of your life once</b> — finance, health, mail, contacts, calendar, home — and read them, and act on them where the source allows, from <b>any</b> AI agent through one neutral surface. The context is yours; the agent is a replaceable client. <b>Swap the harness, keep the context.</b></p>
+    <div class="statusbar">
+      <span><b>V1:</b> neutral · lossless · no-correlation gateway</span>
+      <span><b>Connectors:</b> hand-built core → agent-authored</span>
+      <span><b>Self-host first</b></span>
+      <span><b>AGPL</b> core · <b>Apache</b> SDK</span>
+    </div>
+    <div class="toc">
+      <a href="#p"><b>00</b> Design principles</a>
+      <a href="#sys"><b>01</b> System overview</a>
+      <a href="#comp"><b>02</b> Components</a>
+      <a href="#schema"><b>03</b> Normalized schema contract</a>
+      <a href="#conn"><b>04</b> V1 connectors</a>
+      <a href="#sec"><b>05</b> Security &amp; auth</a>
+      <a href="#repo"><b>06</b> Repository layout</a>
+      <a href="#lic"><b>07</b> Licensing</a>
+      <a href="#road"><b>08</b> Roadmap — the ladder</a>
+      <a href="#non"><b>09</b> Non-goals</a>
+      <a href="#glos"><b>10</b> Glossary</a>
+    </div>
+  </section>
+
+  <!-- 00 -->
+  <section id="p">
+    <div class="sec-no"><b>00</b> &nbsp;Design principles</div>
+    <h2>The invariants.</h2>
+    <p class="narrow">Non-negotiable in V1. A change that violates one is wrong by definition, not by taste.</p>
+    <div class="note"><div class="nt">North star — the three mantras</div><p>Every principle below serves these, and every design decision is measured against them — if a choice weakens one, it's the wrong choice. <strong>One place</strong>: your whole life behind one surface and one grant, not N apps with N configs. <strong>Lightning fast</strong>: reads serve from the local cache in ms; actions add <strong>zero gateway overhead</strong> around the single unavoidable dispatch — we never long-poll the source on the hot path. <strong>Harness-agnostic</strong>: swap the harness, keep the context, the <em>capabilities</em>, the permission, and the audit — paste a URL into any agent.</p></div>
+    <ol class="principles">
+      <li><b>We are the gateway, not the brain.</b> The agent reasons; we authenticate, normalize, store, and serve. <b>No LLM on our side</b> — the agent composes queries, we execute them deterministically.</li>
+      <li><b>The context is the product; the agent is a replaceable client.</b> Everything is built so a user can swap Claude → a local model → whatever's next without losing context. Neutrality and portability are load-bearing.</li>
+      <li><b>Everything is a connector — and eventually connectors author themselves.</b> A new source is <em>only</em> a new adapter that maps into the normalized schema (no per-source logic above the connector layer). The V0 core is hand-built; the SDK extracted from it then lets an agent author the long tail — sandboxed, gated by a conformance harness. Breadth writes itself, once the contract is proven.</li>
+      <li><b>Borrow at the connector; own the normalized store.</b> You may wrap existing OSS to <em>ingest</em> a source, but the normalized rows and the query surface are always ours and uniform.</li>
+      <li><b>Adopt standards, not apps.</b> Each domain's schema is derived from its open standard (vCard, iCalendar, OFX/Plaid model, FHIR/HealthKit) — never from one application's database.</li>
+      <li><b>One store, one uniform surface.</b> Per-domain normalized tables in one database, behind one query API. Not a federation of heterogeneous app databases.</li>
+      <li><b>No cross-domain correlation in V1.</b> No entity resolution, no derived facts, no joins across sectors. The agent correlates at query time. (That layer is the moat — chapters 2/3.)</li>
+      <li><b>Lossless gateway: reads AND actions, no regression.</b> We are a gateway, not just a store — if a source already lets an agent act (Home Assistant toggling a light with its token), routing through us must <em>not</em> strip that. So we expose <b>whatever the connected credential supports — reads and actions</b> — and add portability, one surface, and an audit trail on top. Two kinds of "write", kept distinct: <b>actions</b> (commands sent OUT to the source — toggle a light, send mail) are in V1; <b>derived-store writes</b> (annotations / agent-authored values, e.g. your own <code class="inl">category</code>) stay the planned <b>chapter-2 first feature</b>. Actions dispatch to the provider then trigger a targeted re-sync; they never fabricate data in the store, so it stays a faithful cache — bounded by the credential's own scopes, never exceeding the source grant.</li>
+      <li><b>User-owned by construction.</b> Connect once; see / export / delete everything; every agent is <b>default-deny, scoped per sector, revocable, and audited</b>.</li>
+      <li><b>Design the seams, build the simple impl.</b> <code class="inl">SecretStore</code>, <code class="inl">Auth</code>, and tenancy are interfaces. V1 ships the self-host implementations; hosted swaps in cloud KMS / multi-tenancy / OAuth without a rewrite.</li>
+    </ol>
+  </section>
+
+  <!-- 01 -->
+  <section id="sys">
+    <div class="sec-no"><b>01</b> &nbsp;System overview</div>
+    <h2>Data flows up; queries flow down; actions flow out.</h2>
+    <figure>
+      <div class="fig">
+        <svg class="dg" viewBox="0 0 900 540" role="img" aria-label="System overview">
+          <!-- sources -->
+          <text x="20" y="28" class="tk">SOURCES</text>
+          <g class="ts" text-anchor="middle">
+            <rect class="bx2" x="20"  y="38" width="116" height="26" rx="3"/><text x="78"  y="55">simplefin</text>
+            <rect class="bx2" x="145" y="38" width="116" height="26" rx="3"/><text x="203" y="55">plaid</text>
+            <rect class="bx2" x="270" y="38" width="116" height="26" rx="3"/><text x="328" y="55">whoop</text>
+            <rect class="bx2" x="395" y="38" width="116" height="26" rx="3"/><text x="453" y="55">gmail</text>
+            <rect class="bx2" x="520" y="38" width="116" height="26" rx="3"/><text x="578" y="55">outlook</text>
+            <rect class="bx2" x="645" y="38" width="116" height="26" rx="3"/><text x="703" y="55">google</text>
+            <rect class="bx2" x="770" y="38" width="116" height="26" rx="3"/><text x="828" y="55">home-asst</text>
+          </g>
+          <path class="ln" d="M453 64 L453 86" marker-mid=""/>
+          <text x="463" y="80" class="ts">each source = one Connector</text>
+          <!-- connectors -->
+          <rect class="bxb" x="150" y="88" width="600" height="40" rx="5"/>
+          <text x="450" y="106" text-anchor="middle" class="t">CONNECTORS</text>
+          <text x="450" y="120" text-anchor="middle" class="ts">authenticate · sync · normalize · declare strong keys · action catalog  (rows in; actions out)</text>
+          <path class="lnb" d="M450 128 L450 150"/>
+          <!-- store -->
+          <rect class="bxg" x="150" y="152" width="600" height="44" rx="5"/>
+          <text x="450" y="172" text-anchor="middle" class="t">NORMALIZED STORE · Postgres</text>
+          <text x="450" y="186" text-anchor="middle" class="tk">one table-set per sector — NO cross-domain joins</text>
+          <path class="lnb" d="M450 196 L450 220"/>
+          <!-- core -->
+          <rect class="bx" x="120" y="222" width="520" height="58" rx="5"/>
+          <text x="380" y="244" text-anchor="middle" class="t">CORE API</text>
+          <text x="380" y="259" text-anchor="middle" class="ts">describe_context · get_schema · query · get_record · fetch_live · list_actions · invoke_action</text>
+          <text x="380" y="272" text-anchor="middle" class="tk">deterministic · no LLM · domain grant + cost + schema enforced here · async audit</text>
+          <!-- control plane beside core -->
+          <rect class="bxm" x="664" y="222" width="216" height="58" rx="5"/>
+          <text x="772" y="242" text-anchor="middle" class="t">CONTROL PLANE · 6 tables</text>
+          <text x="772" y="256" text-anchor="middle" class="ts">vault · credential→connectors</text>
+          <text x="772" y="268" text-anchor="middle" class="ts">per-agent grants · audit log</text>
+          <path class="lna" d="M640 251 L664 251"/>
+          <!-- core to adapters -->
+          <path class="lnb" d="M380 280 L380 300 M210 300 L210 322 M380 300 L380 322 M550 300 L550 322 M210 300 L550 300"/>
+          <!-- adapters -->
+          <g text-anchor="middle">
+            <rect class="bxb" x="120" y="324" width="180" height="40" rx="4"/><text x="210" y="345" class="t">MCP server</text><text x="210" y="358" class="ts">primary · any agent</text>
+            <rect class="bx" x="316" y="324" width="180" height="40" rx="4"/><text x="406" y="345" class="t">REST API</text><text x="406" y="358" class="ts">the core surface</text>
+            <rect class="bx" x="512" y="324" width="180" height="40" rx="4"/><text x="602" y="345" class="t">CLI</text><text x="602" y="358" class="ts">terminal · scripting</text>
+          </g>
+          <path class="lnb" d="M210 364 L210 392"/>
+          <path class="lnb" d="M406 364 L406 392"/>
+          <!-- clients -->
+          <g text-anchor="middle">
+            <rect class="bx2" x="120" y="394" width="200" height="44" rx="4"/><text x="220" y="414" class="t">Any agent</text><text x="220" y="428" class="ts">Claude · ChatGPT · Cursor · local</text>
+            <rect class="bx2" x="336" y="394" width="356" height="44" rx="4"/><text x="514" y="414" class="t">Console UI</text><text x="514" y="428" class="ts">connect · permit · export · audit</text>
+          </g>
+          <!-- legend -->
+          <text x="450" y="470" text-anchor="middle" class="ts">Ingestion is eager &amp; continuous (up). Reads are memory-first with an optional bounded live fetch (down). Actions dispatch OUT to the source, then a targeted re-sync.</text>
+          <g class="ts">
+            <rect class="bxb" x="190" y="488" width="14" height="11"/><text x="210" y="497">I/O &amp; agent surface</text>
+            <rect class="bxg" x="360" y="488" width="14" height="11"/><text x="380" y="497">owned store</text>
+            <rect class="bxm" x="510" y="488" width="14" height="11"/><text x="530" y="497">control plane</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>Connectors → normalized store → core API → adapters → clients. Reads serve from the store; actions flow back out to the source.</figcaption>
+    </figure>
+  </section>
+
+  <!-- 02 -->
+  <section id="comp">
+    <div class="sec-no"><b>02</b> &nbsp;Components</div>
+    <h2>Each layer, and what it must not do.</h2>
+
+    <h3>Connectors — the one unit of extension</h3>
+    <p class="narrow">A small adapter for a single source. It authenticates, pulls raw records, normalizes them into the domain's schema, declares deterministic strong keys (recorded now, used later by chapter-3 resolution), and — <strong>where the source supports it</strong> — declares an <strong>action catalog</strong> (<code class="inl">ActionSpec[]</code>) and executes those actions. Reads fill normalized rows; actions dispatch OUT to the source, then a targeted re-sync reflects the result. <strong>Read-only connectors declare an empty catalog. Connectors never correlate, derive, or interpret.</strong></p>
+<pre><span class="kw">export interface</span> <span class="ty">Connector</span>&lt;TNormalized = unknown&gt; {
+  readonly provider: string;     <span class="c">// "simplefin" | "plaid" | "gmail" | ...</span>
+  readonly sector: string;       <span class="c">// "finance" | "health" | "mail" | ...</span>
+  readonly objectType: string;   <span class="c">// "transaction" | "message" | ...</span>
+  readonly actions: ActionSpec[]; <span class="c">// declared action catalog — [] for read-only</span>
+
+  sync(ctx: SyncContext): AsyncIterable&lt;RawRecord&gt;;   <span class="c">// pull since cursor</span>
+  normalize(raw: RawRecord): TNormalized;             <span class="c">// → the domain schema</span>
+  strongKeys(raw: RawRecord): Record&lt;string, string&gt;; <span class="c">// deterministic keys</span>
+  execute(id, params, ctx): Promise&lt;ActionResult&gt;;    <span class="c">// dispatch a declared action OUT</span>
+}</pre>
+    <p class="narrow">This interface and the normalized schemas are the <strong>public contract</strong> of the project — they live in the permissively-licensed <code class="inl">@pci/sdk</code> package so anyone can build and publish connectors. Two providers per sector (SimpleFIN <em>and</em> Plaid; Gmail <em>and</em> Outlook) is the forcing function that proves a schema is genuinely provider-neutral. The V0 core is <strong>hand-built</strong> (agent-assisted); the contract extracted from it then lets an agent author the long tail — run in a sandbox (scoped token, egress-limited) and admitted only on passing a conformance harness. See <a href="agent-authored-connectors.html">Agent-Authored Connectors</a>.</p>
+
+    <h3>Normalized store</h3>
+    <p class="narrow">One Postgres database. Each sector has its own table-set; there are <strong>no foreign keys or joins across sectors</strong>. Every domain table is the <strong>same template</strong> — <code class="inl">id</code> uuid PK (the <code class="inl">get_record</code> drill key) / <code class="inl">connection_id</code> → <code class="inl">connectors</code> / <code class="inl">user_id</code> / <code class="inl">source_object_id</code> (the provider id) / normalized columns / <code class="inl">raw</code> jsonb / <code class="inl">ingested_at</code> / <code class="inl">unique(connection_id, source_object_id)</code> — so the surrogate uuid PK (never the provider id) keeps it multi-user and multi-connection safe and the upsert idempotent. <code class="inl">get_record</code> drills to source truth via the <code class="inl">raw</code> payload. A small in-code <strong>registry</strong> (<code class="inl">src/core/schema.ts</code>) declares, per sector, the table and its queryable fields, and the query API validates every field against it. Full table-by-table definitions: <a href="../db/schema.sql">Data Model</a>.</p>
+    <div class="note"><div class="nt">Not here in V1</div><p>No <code class="inl">source_events</code> / entity resolution / <code class="inl">derived_facts</code>. Those belong to chapters 2–3. V1 is normalized per-domain rows and nothing more.</p></div>
+
+    <h3>Core API — the seven primitives</h3>
+    <p class="narrow">Plain functions over Postgres. Everything else (MCP, REST, CLI) is a thin adapter over it — never a second implementation. <strong>"Anything and everything" comes from a few powerful primitives, not a tool per question:</strong> the agent introspects the schema, composes any query, drills to raw, forces a live fetch, or discovers and invokes an action — without us anticipating questions. Cross-sector breadth is a <strong>fan-out, not a join</strong>.</p>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">primitive</th><th>purpose</th></tr></thead>
+      <tbody>
+        <tr><td class="m">describe_context()</td><td>which sectors are connected, and freshness</td></tr>
+        <tr><td class="m">get_schema(sector?)</td><td>the queryable objects + fields per sector (the contract <code class="inl">query</code> validates)</td></tr>
+        <tr><td class="m">query({sector, where?, select?, aggregate?, limit?})</td><td>structured read over <strong>one</strong> sector</td></tr>
+        <tr><td class="m">get_record(sector, id)</td><td>drill to the raw source record</td></tr>
+        <tr><td class="m">fetch_live(sector)</td><td>bounded live pull beyond the cache</td></tr>
+        <tr><td class="m">list_actions(sector?)</td><td>discover a connector's typed action catalog — the write analog of <code class="inl">get_schema</code> (empty for read-only)</td></tr>
+        <tr><td class="m">invoke_action(actionId, params)</td><td>perform a declared action; params validated against its <code class="inl">ActionSpec</code>, then dispatched OUT + re-synced</td></tr>
+      </tbody>
+    </table></div>
+    <h4>The four guardrails — enforced in the core, so every adapter inherits them</h4>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">guardrail</th><th>enforced as</th></tr></thead>
+      <tbody>
+        <tr><td class="m">Permission</td><td><strong>domain-level grant</strong> — a granted sector (default-deny) covers <strong>read AND act</strong> across every provider in that domain; no per-connector / per-action / tier / confirmation gating. Resolved once per session into an in-memory set → nanosecond check, never a DB round-trip</td></tr>
+        <tr><td class="m">Cost</td><td>pagination + row/time caps + rate limits; <code class="inl">fetch_live</code> is budgeted</td></tr>
+        <tr><td class="m">Schema-as-contract</td><td>only registry table/column names reach SQL; all values parameterized; never raw SQL from agent input; <code class="inl">invoke_action</code> params validated against the connector's <code class="inl">ActionSpec</code></td></tr>
+        <tr><td class="m">Audit</td><td><strong>ASYNC, off the hot path</strong> — every read AND action is logged fire-and-forget (best-effort durability), with an <code class="inl">outcome</code> for actions. <strong>Detective, not preventive</strong>: never blocks, never adds latency; visible to the user</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Freshness &amp; speed — the gateway <em>is</em> the cache</h3>
+    <p class="narrow">There is no separate cache tier. The pipeline is <strong>sync → local store → serve</strong>: connectors pull each source into Postgres on their own cadence, and reads are served from that store. So <code class="inl">query</code> and <code class="inl">get_record</code> are <strong>always cache-only and instant — they never touch a provider.</strong> <code class="inl">fetch_live</code> is the <strong>one</strong> upstream path (opt-in, bounded), and <code class="inl">describe_context</code> exposes each connector's <code class="inl">last_synced_at</code> so the agent self-serves the freshness/latency tradeoff rather than us guessing it. <strong>No Redis or second cache tier in V0</strong> — indexed, capped, projected Postgres is the cache; the only in-memory caching worth doing is <code class="inl">get_schema</code> / <code class="inl">describe_context</code>.</p>
+    <p class="narrow">Freshness is <strong>connector-declared policy, not code</strong>. Each connector ships a <code class="inl">SyncPolicy</code> and a generic scheduler orchestrates all sources identically — there is no bespoke per-sector sync path:</p>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">mode</th><th>scheduler behavior</th><th class="m">e.g.</th></tr></thead>
+      <tbody>
+        <tr><td class="m">push</td><td>register the source's subscription/webhook; update the store on each event</td><td class="m">Home&nbsp;Assistant</td></tr>
+        <tr><td class="m">poll</td><td>run <code class="inl">sync()</code> on a cadence, pulling deltas from the cursor</td><td class="m">SimpleFIN, Whoop</td></tr>
+        <tr><td class="m">on_demand</td><td>never auto-syncs; only <code class="inl">fetch_live</code> touches it</td><td class="m">—</td></tr>
+      </tbody>
+    </table></div>
+    <p class="narrow">Every domain table is one template, so indexing is generic too: each registry object declares a <code class="inl">primaryTime</code>, which drives both the <code class="inl">(user_id, connection_id, primaryTime)</code> hot-read index and the default sort. And because the store is the source of truth for reads, <code class="inl">query</code> supports <strong>server-side aggregation</strong> (<code class="inl">sum</code> / <code class="inl">count</code> / <code class="inl">avg</code>) — the agent never ships rows home to reduce them.</p>
+    <p class="narrow"><strong>Actions are cache-first too — the slow part of acting is discovery, not the dispatch.</strong> Acting naïvely means a chain of live polls (enumerate entities → filter → check state → check supported services), then one command. We serve that discovery from the <strong>cache + the static action catalog</strong> (ms, same as reads), so <strong>only the single dispatch is live</strong>. Three moves keep an action ~one-shot, with no extra gateway round-trips:</p>
+    <ul class="tight">
+      <li><strong>Typed MCP tool at connect — the tool list <em>is</em> the catalog.</strong> Each connector's <code class="inl">ActionSpec[]</code> is exposed as a typed MCP tool when the connector is wired, so there's no <code class="inl">list_actions</code> round-trip on the hot path; the generic <code class="inl">invoke_action</code> stays for REST/CLI peers.</li>
+      <li><strong>Deterministic target resolution, server-side.</strong> <code class="inl">invoke_action</code> accepts a structured selector (area / domain / name) resolved against the cache <strong>server-side with no LLM on our side</strong>, so "the kitchen light" is one call, not query-then-act.</li>
+      <li><strong>Non-blocking reconciliation.</strong> The action returns immediately; the push stream (or an optimistic write) updates cached state afterward — no synchronous re-poll on the response, consistent with the async-audit, never-blocking model.</li>
+    </ul>
+    <p class="narrow"><strong>The honest floor:</strong> the one live dispatch is bounded by the source — everything around it is instant. (Permission stays <strong>domain-level</strong>: a granted sector covers read AND act; nothing here adds a per-action gate.)</p>
+
+    <h3>Adapters</h3>
+    <ul class="tight">
+      <li><strong>MCP server (primary).</strong> Remote (Streamable HTTP) for "any agent, one URL"; stdio for local single-agent use. Tools map <strong>1:1</strong> onto the core primitives. <span style="color:var(--ink-soft)">(Transport, sessions &amp; the keep-alive reality: §05.)</span></li>
+      <li><strong>REST API (the core surface).</strong> What the Console UI consumes and the protocol-risk hedge — if MCP is superseded, swap the adapter; the core stands.</li>
+      <li><strong>CLI (secondary).</strong> Terminal/coding harnesses, scripting, tests.</li>
+    </ul>
+
+    <h3>Console UI &amp; control plane</h3>
+    <p class="narrow">The Console is the <strong>connect / permission / export / audit</strong> surface and the consent front door — not a dashboard, not an assistant. It talks to the REST API (a prerequisite for the UI) and is bundled in Docker Compose. Behind it sits a <strong>six-table control plane</strong> — one chain from a user to an audited read (full schema in <a href="../db/schema.sql">Data Model</a>):</p>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">table</th><th>what one row is</th></tr></thead>
+      <tbody>
+        <tr><td class="m">users</td><td>the tenancy anchor; one seeded row in self-host, more rows (no migration) when multi-tenant</td></tr>
+        <tr><td class="m">secrets</td><td>the vault — a token encrypted at rest; everything else references it by <code class="inl">secret_ref</code>, never the blob</td></tr>
+        <tr><td class="m">provider_credentials</td><td><strong>one authenticated consent</strong> (one Google OAuth, one SimpleFIN access URL); carries the <code class="inl">custody</code> mode and points at <code class="inl">secrets</code></td></tr>
+        <tr><td class="m">connectors</td><td><strong>one credential × one sector.</strong> <code class="inl">connectors.id</code> is the <code class="inl">connection_id</code> FK on every domain row; runtime sync state (cursor, <code class="inl">last_synced_at</code>) lives here</td></tr>
+        <tr><td class="m">agent_grants</td><td>per-agent, <strong>default-deny</strong> sector scopes (empty = nothing), revocable; the API-key hash lives here, never the raw key</td></tr>
+        <tr><td class="m">audit_log</td><td>append-only, one row per core call — <strong>allow and deny</strong>; the app role has UPDATE/DELETE revoked</td></tr>
+      </tbody>
+    </table></div>
+    <p class="narrow">The credential / connector split is load-bearing: <strong>one consent fans out to many sectors.</strong> A single Google credential yields three connectors — <code class="inl">mail</code>, <code class="inl">contacts</code>, <code class="inl">calendar</code> — so the user consents once and the gateway treats each sector as an independent, separately-permissioned connection. Adding a sector is a new domain table plus a registry entry; it is <strong>never</strong> a control-plane change.</p>
+
+    <h3>The authoring substrate — the breadth flywheel</h3>
+    <p class="narrow">After the V0 core is hand-built, breadth comes from an owned substrate — and that substrate is the moat: <strong>the SDK + schema contract</strong> (the target an agent writes against), a <strong>sandboxed runtime</strong> (generated code runs with no ambient secrets — only the scoped token, egress restricted to the source's domain, with CPU/time/memory caps), and a <strong>conformance harness</strong> (validates schema-valid rows, idempotency, pagination, and auth refresh before a connector is trusted). The connectors are generated (commodity) and the SDK is open (Apache); <strong>the sandbox + harness are what we own — trustworthy generation is the product.</strong> Full design: <a href="agent-authored-connectors.html">Agent-Authored Connectors</a>.</p>
+  </section>
+
+  <!-- 03 -->
+  <section id="schema">
+    <div class="sec-no"><b>03</b> &nbsp;The normalized schema contract</div>
+    <h2>Adopt the standard, not the app.</h2>
+    <p class="narrow">Each domain normalizes to the open standard for that domain — provider-neutrality for free, and a documented, stable target for connector authors. The schemas live in <code class="inl">@pci/sdk</code>; the column-level breakdown is the <a href="../db/schema.sql">Data Model</a>.</p>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">sector</th><th>normalize to (reference)</th><th>V1 providers → one schema</th></tr></thead>
+      <tbody>
+        <tr><td class="m">finance</td><td>OFX / Plaid transaction model</td><td>SimpleFIN <strong>+</strong> Plaid → <code class="inl">finance_accounts</code>, <code class="inl">finance_transactions</code></td></tr>
+        <tr><td class="m">mail</td><td>RFC 5322 envelope model</td><td>Gmail <strong>+</strong> Outlook (Graph) → <code class="inl">mail_messages</code></td></tr>
+        <tr><td class="m">calendar</td><td>iCalendar (RFC 5545) VEVENT</td><td>Google <strong>+</strong> Graph → <code class="inl">calendar_events</code></td></tr>
+        <tr><td class="m">contacts</td><td>vCard (RFC 6350)</td><td>Google People <strong>+</strong> Graph → <code class="inl">contacts</code></td></tr>
+        <tr><td class="m">health</td><td>FHIR Observation / HealthKit metric</td><td>Whoop <strong>+</strong> Apple Health → <code class="inl">health_samples</code>, <code class="inl">health_workouts</code>, <code class="inl">health_sleep_sessions</code></td></tr>
+        <tr><td class="m">home</td><td>(no standard) HA entity/state model</td><td>Home Assistant → <code class="inl">home_entities</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note amber"><div class="nt">On reusing app databases</div><p>SureFin and similar OSS finance apps are <strong>design references only</strong> — we build our own SimpleFIN/Plaid connectors mapping into our schema, to avoid a dependency and keep the surface uniform. Borrow at the connector if it saves real ingestion work; never adopt an app's database as ours.</p></div>
+  </section>
+
+  <!-- 04 -->
+  <section id="conn">
+    <div class="sec-no"><b>04</b> &nbsp;V1 connectors</div>
+    <h2>Token-based first, OAuth second.</h2>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">sector</th><th class="m">provider</th><th class="m">auth</th><th>notes</th></tr></thead>
+      <tbody>
+        <tr><td class="m">finance</td><td class="m">SimpleFIN</td><td class="m">access URL (token)</td><td>no OAuth app needed — lowest friction</td></tr>
+        <tr><td class="m">finance</td><td class="m">Plaid</td><td class="m">Plaid Link + item token</td><td>needs a Plaid app + Link flow</td></tr>
+        <tr><td class="m">home</td><td class="m">Home Assistant</td><td class="m">long-lived token</td><td>no OAuth app needed; local-reaching</td></tr>
+        <tr><td class="m">health</td><td class="m">Whoop</td><td class="m">OAuth 2.0</td><td>OAuth app required</td></tr>
+        <tr><td class="m">mail</td><td class="m">Gmail</td><td class="m">Google OAuth</td><td>one Google consent covers mail+contacts+calendar</td></tr>
+        <tr><td class="m">contacts</td><td class="m">Google People</td><td class="m">Google OAuth</td><td>(same consent)</td></tr>
+        <tr><td class="m">calendar</td><td class="m">Google Calendar</td><td class="m">Google OAuth</td><td>(same consent)</td></tr>
+        <tr><td class="m">mail/cal/contacts</td><td class="m">Outlook (MS Graph)</td><td class="m">Microsoft OAuth</td><td>Microsoft app required</td></tr>
+      </tbody>
+    </table></div>
+    <p class="narrow" style="font-size:.92rem;color:var(--ink-soft);font-family:var(--sans);">Build sequencing falls out of self-host (§05): token-based connectors first (<strong>SimpleFIN, Home Assistant</strong> — nothing to register), then the OAuth ones with a bring-your-own-app flow.</p>
+  </section>
+
+  <!-- 05 -->
+  <section id="sec">
+    <div class="sec-no"><b>05</b> &nbsp;Security &amp; auth</div>
+    <h2>Self-host first deletes the two hardest pieces.</h2>
+    <p class="narrow">V1 is <strong>self-host first, single-tenant</strong>: the operator owns the box and the disk. Two auth questions stay strictly separate — how an <em>agent</em> reaches the gateway, and how the <em>gateway</em> reaches a provider.</p>
+
+    <h4>Agent → gateway — three tiers</h4>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">tier</th><th>mechanism</th><th>when</th></tr></thead>
+      <tbody>
+        <tr><td class="m">local</td><td><strong>stdio MCP, no auth</strong></td><td>the operator's own agent on the same box</td></tr>
+        <tr><td class="m">remote</td><td><strong>per-agent scoped bearer API keys</strong> — generated in the Console, scoped to sectors (default-deny), audited; only the key hash is stored in <code class="inl">agent_grants</code></td><td>multiple / remote agents</td></tr>
+        <tr><td class="m">OAuth&nbsp;2.1&nbsp;AS</td><td><strong>(deferred)</strong> — a full OAuth <em>authorization server</em></td><td>the hosted / multi-tenant chapter</td></tr>
+      </tbody>
+    </table></div>
+    <p class="narrow"><strong>There is no OAuth <em>authorization server</em> to run in V1.</strong> Scoped bearer keys are the entire agent-auth surface; the AS is a hosted-chapter concern, behind the <code class="inl">Auth</code> seam (principle 10).</p>
+
+    <h4>How agents connect — transport &amp; the keep-alive reality</h4>
+    <p class="narrow"><strong>MCP is the surface</strong>, and the connection model differs by transport — "a keep-alive connection" only half-describes it. <strong>Local (stdio)</strong> genuinely is persistent: the harness spawns the gateway as a subprocess and holds one stdin/stdout pipe open for the whole session, reused across every tool call — no network, no handshake. <strong>Remote (Streamable HTTP)</strong> is <em>not</em> a custom long-lived socket: each JSON-RPC message is an HTTP <code class="inl">POST</code> to one endpoint, answered with either a plain JSON response or an optional Server-Sent-Events stream; session continuity rides the <code class="inl">Mcp-Session-Id</code> header (it outlives any single TCP connection), and "keep-alive" is just ordinary HTTP connection reuse. Use the SDK's <code class="inl">StreamableHTTPServerTransport</code> — never hand-roll a socket.</p>
+    <p class="narrow"><strong>Where latency actually goes.</strong> Reads are milliseconds from the local store (§02), so the gateway's own work is rarely the bottleneck — <em>transport setup is</em>. Locally the persistent pipe already eliminates it. Remotely, opening a fresh TCP+TLS connection per call (~1 RTT each) would dwarf a sub-millisecond read; ordinary <strong>HTTP keep-alive / connection pooling</strong> fixes it by reusing one warm connection across calls. The win is at the HTTP layer, not a bespoke MCP channel.</p>
+    <p class="narrow"><strong>A non-MCP harness still connects.</strong> If it speaks MCP, wiring it up is config-only (add the stdio command, or paste a URL + key). If it has tool/function-calling but not MCP, point ~5 thin wrappers at the <strong>REST</strong> mirror — or use an MCP→function-calling adapter, which imports the tools and keeps <code class="inl">get_schema</code> discovery for free. If it can only shell out, wrap the <strong>CLI</strong>. MCP support is a convenience, not a requirement; the only harness that can't connect is one with no tools, no HTTP, and no shell.</p>
+    <div class="note amber"><div class="nt">The static-bearer deviation</div><p>The MCP authorization spec expects HTTP transports to be OAuth 2.1 <em>resource servers</em>. V1's scoped static bearer is a deliberate, wire-compatible deviation until the hosted OAuth AS lands — so a <strong>strict</strong> MCP client that demands the OAuth discovery handshake may reject a plain bearer. The reliable V1 paths are therefore <strong>stdio locally</strong> and <strong>bearer-tolerant clients remotely</strong>, with manual key entry as the fallback.</p></div>
+
+    <h4>Gateway → provider — the <code class="inl">custody</code> enum</h4>
+    <p class="narrow">Provider-side OAuth (the gateway acting as a <em>client</em> to Google / Microsoft / Whoop) is a different axis, modeled on <code class="inl">provider_credentials.custody</code>: <code class="inl">static_token</code> (SimpleFIN access URL, Home Assistant long-lived token — no OAuth app), <code class="inl">byo_app</code> (the operator brings their own OAuth client), <code class="inl">hosted_broker</code> (a broker we run hands out client credentials), <code class="inl">on_device</code> (reserved). This is what lets one box reach an OAuth source without standing up an authorization server of our own.</p>
+
+    <h4>Encryption</h4>
+    <p class="narrow">Per-user envelope encryption (DEK/KEK) is a <em>multi-tenant</em> honeypot concern. Single-tenant self-host: the operator owns the box and the disk. So V1 <strong>encrypts connector secrets at rest</strong> with a local master key (<code class="inl">SecretStore</code>), relies on the operator's disk encryption for the rest, and <strong>defers</strong> per-user DEKs to the hosted chapter — behind the same seam.</p>
+
+    <div class="note amber"><div class="nt">The self-host wrinkle: OAuth <em>client</em> credentials</div><p>A self-hosted box reaching Gmail/Outlook/Whoop needs OAuth <em>app</em> credentials. Two supported custody modes cover it: <code class="inl">byo_app</code> — the operator <strong>brings their own app</strong> (privacy-pure, some setup) — or <code class="inl">hosted_broker</code>, a broker we run. <code class="inl">static_token</code> sources (SimpleFIN, Home Assistant) avoid this entirely, which is why they're the first connectors.</p></div>
+
+    <h4>Threat model (V1)</h4>
+    <p class="narrow"><strong>Trusted:</strong> the operator and their box. <strong>Defended:</strong> agent over-reach (default-deny + scope + audit), secret theft from a data dump (secrets encrypted, referenced by <code class="inl">secret_ref</code>), over-reaching actions (bounded by the credential's own scopes — we never exceed the source grant — plus the domain grant + async audit). <strong>Out of scope for V1:</strong> a compromised host OS, and multi-tenant isolation (there is one tenant).</p>
+  </section>
+
+  <!-- 06 -->
+  <section id="repo">
+    <div class="sec-no"><b>06</b> &nbsp;Repository layout</div>
+    <h2>The license seam runs down the middle.</h2>
+<pre>pci/
+  packages/
+    sdk/              <span class="c">@pci/sdk    · Apache-2.0   ← Connector interface + normalized schema specs + helpers</span>
+    server/           <span class="c">@pci/server · AGPL-3.0     ← store, core API, MCP+REST adapters, auth, audit, registry</span>
+    connectors/
+      simplefin/      <span class="c">· Apache    (depends on @pci/sdk)</span>
+      home-assistant/ <span class="c">· Apache</span>
+      plaid/  whoop/  gmail/  outlook/  google-calendar/  google-contacts/   <span class="c">· Apache</span>
+  apps/
+    web/              <span class="c">· AGPL       ← the Console UI (Next.js, over REST)</span>
+  docker-compose.yml  <span class="c">← Postgres + server + console, one command</span></pre>
+    <p class="narrow">The current scaffold is the <strong>seed of <code class="inl">packages/server</code></strong> (plus the connector contract that moves into <code class="inl">packages/sdk</code>). The split is a near-term refactor, not a rewrite.</p>
+  </section>
+
+  <!-- 07 -->
+  <section id="lic">
+    <div class="sec-no"><b>07</b> &nbsp;Licensing</div>
+    <h2>Permissive ecosystem, protected core.</h2>
+    <ul class="tight">
+      <li><strong><code class="inl">@pci/sdk</code> and all connectors: Apache-2.0.</strong> Permissive on purpose — anyone freely builds, ships, and combines connectors. The ecosystem is how an OSS project gets breadth cheaply, so friction here must be zero.</li>
+      <li><strong>Server and Console: AGPL-3.0.</strong> A hosted clone must open-source its modifications — protecting a future hosted offering while keeping the project fully open.</li>
+      <li><strong>Contributions: CLA.</strong> Because a hosted/dual-licensed offering is intended, a lightweight Contributor License Agreement preserves the right to relicense/host.</li>
+    </ul>
+    <p class="narrow">Every file carries an <code class="inl">SPDX-License-Identifier</code> header.</p>
+  </section>
+
+  <!-- 08 -->
+  <section id="road">
+    <div class="sec-no"><b>08</b> &nbsp;Roadmap — the three-chapter ladder</div>
+    <h2>Same ambition, sane sequence.</h2>
+    <p class="narrow">Each chapter is additive over the one before, reads from the substrate you already own, and is <strong>gated on signal, not a calendar</strong>.</p>
+    <div class="tbl"><table>
+      <thead><tr><th class="m">chapter</th><th>what you add</th><th class="m">rent / build</th><th>climb when</th></tr></thead>
+      <tbody>
+        <tr><td class="m">1 · Gateway</td><td>this — neutral, no-correlation access to the sectors</td><td class="m"><span class="badge in">build</span></td><td>now</td></tr>
+        <tr><td class="m">2 · Recall</td><td>semantic + temporal search and cross-session memory — a <code class="inl">recall()</code> tool beside <code class="inl">query()</code></td><td class="m"><span class="badge later">rent</span></td><td>users want "search across everything"</td></tr>
+        <tr><td class="m">3 · Canonical</td><td>cross-source resolution, derived facts, corrections that win forever (the moat)</td><td class="m"><span class="badge in">build</span></td><td>breadth has proven out and someone is matching it</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note amber"><div class="nt">Where a rented engine fits — and where it does not</div><p>A memory engine (Mem0 / Graphiti / HydraDB) is legitimate for <strong>recall</strong> (chapter 2): a rebuildable index over our normalized store, behind an adapter, chosen by a bake-off on real data. It must <strong>never</strong> own <strong>chapter 3</strong> — identity and truth. Those engines decide merges with an LLM, which cannot hold a deterministic precision bar or honor corrections forever, and would make the user's context portable to the <em>vendor</em>, not the user. <strong>Recall is rentable; identity-and-truth is the IP.</strong></p></div>
+  </section>
+
+  <!-- 09 -->
+  <section id="non">
+    <div class="sec-no"><b>09</b> &nbsp;V1 non-goals — tripwires</div>
+    <h2>If a change introduces one of these, it does not belong in the beta.</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>not in the beta</th><th class="m">status</th></tr></thead>
+      <tbody>
+        <tr><td>cross-domain correlation / joins / entity resolution / derived facts</td><td class="m"><span class="badge later">ch. 2–3</span></td></tr>
+        <tr><td>proactive notifications (a passive gateway cannot push)</td><td class="m"><span class="badge out">out</span></td></tr>
+        <tr><td><strong>derived-store writes</strong> — agent annotations / corrections / authored facts on the store (actions OUT to a source <em>are</em> in V1; this is writing fabricated data <em>in</em>)</td><td class="m"><span class="badge later">ch. 2</span></td></tr>
+        <tr><td><strong>per-action / per-connector / tier / confirmation permission</strong> — permission is domain-level only; a granted sector covers read AND act</td><td class="m"><span class="badge out">out</span></td></tr>
+        <tr><td><strong>synchronous / blocking audit</strong> — audit is async and detective, never on the response hot path</td><td class="m"><span class="badge out">out</span></td></tr>
+        <tr><td>an in-app agent or assistant (we are the gateway, not the brain)</td><td class="m"><span class="badge out">out</span></td></tr>
+        <tr><td>an LLM on the read path (the agent composes; we execute)</td><td class="m"><span class="badge out">out</span></td></tr>
+        <tr><td>per-source logic above the connector layer</td><td class="m"><span class="badge out">out</span></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 10 -->
+  <section id="glos">
+    <div class="sec-no"><b>10</b> &nbsp;Glossary</div>
+    <h2>Terms.</h2>
+    <ul class="tight">
+      <li><strong>Sector</strong> — a domain of life (finance, health, mail, contacts, calendar, home).</li>
+      <li><strong>Connector</strong> — an adapter for one source that normalizes into a sector's schema.</li>
+      <li><strong>Normalized store</strong> — per-sector tables; the only place data lives; no cross-sector joins.</li>
+      <li><strong>Core API</strong> — the seven primitives (five reads + <code class="inl">list_actions</code> / <code class="inl">invoke_action</code>); the single place permission/cost/schema/audit are enforced.</li>
+      <li><strong>Adapter</strong> — MCP / REST / CLI surface over the core (no logic of its own).</li>
+      <li><strong>Console</strong> — the connect/permission/export/audit UI.</li>
+      <li><strong>Recall (ch. 2)</strong> — rented semantic/temporal search over the store.</li>
+      <li><strong>Canonical (ch. 3)</strong> — the owned resolution + correction layer (the moat).</li>
+    </ul>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="big">Borrow at the edges. Own the core. Swap the harness, keep the context.</p>
+    <p class="sub">Personal Context Gateway · Architecture · June 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>

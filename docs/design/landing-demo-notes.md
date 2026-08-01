@@ -1,0 +1,26 @@
+# Landing demo — research digest + decision log (2026-07-31)
+
+Session `releaseDemoprepAgent`. The working state is `docs/HANDOFF.md` (2026-07-31 block); this file preserves the *reasoning* that would otherwise die with the session. The demo code itself (`~/code/posternLandingPage`, branch `gate-demo`) carries the operational values in its header comments — trust the code over memory.
+
+## The pattern (from a first-hand teardown of paper.design's landing)
+
+Their demo is **not a video** — a live SSR'd DOM simulation: IntersectionObserver (threshold 0, rootMargin 50px) starts an infinite abortable loop (AbortController; leaving the viewport aborts mid-scene, re-entry restarts); typed prompts (~40-50ms/char) drive the canvas reacting; one eased camera move per cycle; `useReducedMotion` short-circuits to a static completed end-state; the SSR'd HTML is frame one (no poster needed). Ours follows this exactly, vanilla JS, zero dependencies.
+
+## Decisions that took iterations — don't relitigate casually
+
+- **Overlay, not split**: the Console is the full-stage base window; each beat floats *that agent's own app* (real chrome) over the quiet lower-left. Two windows = the agent is a visitor, not a component.
+- **Tool steps live INSIDE the visitor windows** (operator preference, round-tripped once): claude.ai/ChatGPT genuinely render in-chat tool steps; Telegram speaks centered system chips. A gate-narration ribbon was built and then **removed** — silent chrome is decoration.
+- **Move, don't glow** (operator): access = one slow deliberate lift (~1.3s, 250ms cross-sector stagger); **the only card that ever shakes is the one refusing** (poppy). Scan-sweep retired — one gesture per read.
+- **fetch_live must be visibly SLOW** ("reaching the bank…", 1.8s): the latency contrast against the 41ms cache lines *is* the message.
+- **Readability beats the cycle ceiling** (operator, 2026-07-31: "the page is gone before we register what happened"). The old ~45s ceiling is superseded: beats now breathe 2.4–4.2s after their answer and the cycle runs ~57s. If it must shorten again, trade a beat out — never re-compress the holds.
+- **Believable > punchy** (operator, 2026-07-31, with their real WHOOP Q&A as the model): the claude beat follows the shape of a real run — query health → an interstitial serif line where the agent notices duration is FINE → query calendar → chart → the evening-culprits pattern (late class, midnight dinner, the YC-deadline night). The interstitial reasoning between tool calls is what sells it. Numbers are mock-shifted from the real week but WHOOP-semantics-true (two yellow dips + one red 31% morning; copy claims only what the bars satisfy). Story detail: brain.fm = $99.99 annual refund, then a $9.99 *monthly* charge — the switched-plans micro-story keeps both beats coherent.
+- **The claude window renders DARK mode** (operator choice, 2026-07-31); ChatGPT and Telegram stay light. Chrome verbosity trimmed: no "Logged at the gate" tails — the ledger row IS the log line. Ledger rows carry the canonical sector marks (same rule as the real Console ledger).
+- Refusal coherence matters: a beat's refused sector must make sense for that agent's granted scope (two story bugs were caught this way).
+
+## Brand-spec facts (source-verified; full values inline in gate-demo.js and the Conv-04 stills)
+
+claude.ai LIGHT: ground `#FAF9F5`, starburst `#D97757`, send `#C96442` (a **legacy** token — see dark note), assistant = serif, NO bubble. claude.ai DARK (what the demo's claude window renders; verified from the production `[data-mode=dark]` token CSS, build ~2026-07-02, via the Wayback-discovered asset bundles): ground bg-100 `#262624` · user bubble bg-300 `#141413` — **dark inverts the surface scale, the bubble is darker than the ground** — sans, rounded-xl · assistant text-100 `#FAF9F5`, serif, NO bubble in dark too · composer bg-000 `#30302E`, hairline `#DEDCD1` @ 30% alpha, placeholder `#9C9A92` · hairlines are border tokens at baked-in alpha, effective ≈ `#42413E` over the ground · send `#C6613F` idle / `#D97757` hover, SAME in both modes in the current build (`#C96442` no longer exists in it) · starburst `#D97757` byte-identical light/dark. ChatGPT: pure white, blossom black-only (OpenAI brand rule), user bubble `#F4F4F4`, "Ask anything", NO serif anywhere. Telegram iOS: outgoing `#E1FFC7` with **green** in-bubble ✓✓ `#008C09` (blue ticks are WhatsApp's — the classic wrong-from-memory tell), accent `#0088FF`, logo gradient `#2AABEE→#229ED9`. **Unverified flags**: claude mid-thread placeholder ("Reply to Claude…"), exact ChatGPT bubble token (#F4F4F4-family certain), Telegram composer placeholder. WHOOP recovery semantics in the chart beat: green ≥67 / yellow 34–66 / red ≤33 (data must satisfy the thresholds the copy claims).
+
+## For future *video* work (the film, socials)
+
+Remotion shipped official **Agent Skills** (Jan 2026): `npx create-video --yes --blank` + `npx skills add remotion-dev/skills` — the canonical Claude-one-shots-a-demo-video pipeline; rebuild UI as React components in the composition, don't pan screenshots. Motion Canvas is effectively unmaintained — avoid. Landing embeds: `autoplay muted loop playsinline` + poster, ≤4MB desktop / ≤2MB mobile, H.264 + VP9 sources (AV1 has no Apple software decoder). The approved film (73MB) is click-to-play only.

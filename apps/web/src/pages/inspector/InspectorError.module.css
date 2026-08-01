@@ -1,0 +1,62 @@
+/* The outage region (#100 item 1). It sits in the same slot a ZeroState would, so it borrows that
+ * geometry and type scale verbatim (kit/ZeroState.module.css) — an outage and an empty store must
+ * read as the same KIND of surface, differing only in what they say and in the one accent below.
+ *
+ * ONE VOICE PER SURFACE: `--state-error` appears exactly once, as the left rule. The headline stays
+ * `--color-ink` and the button stays `--color-seal`. */
+
+.box {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 30px 32px;
+  background: var(--color-paper-inset);
+  border-left: 2px solid var(--state-error);
+  border-radius: var(--radius-md);
+}
+
+.headline {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 28px;
+}
+
+.reason {
+  max-width: 470px;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 21px;
+}
+
+/* The served failure text, in mono because it is a machine sentence, not our prose. */
+.detail {
+  max-width: 470px;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.actionRow {
+  padding-top: 8px;
+}
+
+.action {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.action:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,79 @@
+/* Masthead — kicker row · generated verdict sentence · optional sub · optional right block.
+ * Values ported from the Gatehouse masthead `1Q-0`. The verdict SENTENCE is composed by the page
+ * (exceptions-first, build-notes §14.4) and passed in; this component owns only the frame. */
+
+.masthead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 48px;
+}
+
+.lead {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 660px;
+}
+
+.kickerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.kicker {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.kickerDot {
+  flex-shrink: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-rule-strong);
+}
+
+.meta {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.verdict {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 46px;
+  letter-spacing: -0.01em;
+  line-height: 108%;
+}
+
+.sub {
+  max-width: 560px;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-style: italic;
+  line-height: 145%;
+}
+
+.right {
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+  .masthead {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .verdict {
+    font-size: 36px;
+  }
+}

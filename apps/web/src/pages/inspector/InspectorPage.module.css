@@ -1,0 +1,211 @@
+/* The inspector list — object tabs, the toolbar, the degraded schema affordance, pagination.
+ * Values ported from the Finance inspector artboard (6I9-0 / node 6M3-0). */
+
+/* ── object tabs ── */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  border-bottom: 1px solid var(--color-ink-a22);
+}
+
+.tab {
+  padding: 0 0 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 19px;
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--color-ink);
+}
+
+.tabActive {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+/* ── toolbar (filter · toggle · count) ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.filter {
+  flex-shrink: 0;
+  width: 320px;
+  height: 40px;
+  box-sizing: border-box;
+  padding-inline: 14px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+.filter::placeholder {
+  color: var(--color-faded);
+}
+
+.filterSpacer {
+  flex-shrink: 0;
+  width: 320px;
+  height: 40px;
+}
+
+.grow {
+  flex-grow: 1;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 17px;
+  cursor: pointer;
+}
+
+.count {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 17px;
+  flex-shrink: 0;
+}
+
+/* ── the schema peek (#82) ──
+ * Was a struck-through, unpressable affordance with a bearer-gated reason beside it. `get_schema` is
+ * served to the loopback Console now, so `.degradedBtn` (line-through, cursor:not-allowed, opacity)
+ * is GONE — a disabled treatment on a working control is the lie in the other direction. The row
+ * layout survives unchanged, so the surface sits exactly where it did; the caption's italic did NOT
+ * survive #106 §3 — see `.degradedReason`. */
+.degraded {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Shares the pager link's treatment verbatim — one text-button voice on this page, no new values. */
+.schemaBtn,
+.pagerBtn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  cursor: pointer;
+}
+.schemaBtn {
+  flex-shrink: 0;
+}
+.schemaBtn:hover,
+.pagerBtn:hover {
+  text-decoration: underline;
+}
+
+/* The caption beside the schema control (#106 §3). It was 12.5px italic — a size the token scale does
+ * not carry (it steps 11 → 13) and, in Paper, a size used only for dense mono/data lines: pager counts,
+ * field keys, raw payload rows, table cells. `find_nodes` on the Console file returns 81 nodes at
+ * 12.5px and NOT ONE of them is italic, and none is a prose caption. So this treatment was invented
+ * twice over, for a sentence that is now a plain statement of what the control does rather than an
+ * apology for what it cannot. 13px is `--text-sm`; upright, because this is a fact, not a gap. */
+.degradedReason {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* The panel itself. Values reused verbatim from the record drill's raw block
+ * (`RecordDrillPage.module.css .rawScroll` / `.raw`, itself ported from artboard 6AK-0 / node 6HK-0) —
+ * this is the same kind of object: the gate's own words, shown as they arrive. */
+.schemaPanel {
+  flex-basis: 100%;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: auto;
+  padding: 18px 20px;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+}
+
+.schemaHead {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.schemaNote {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 19px;
+  max-width: 520px;
+}
+
+.schemaFields {
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.schemaField {
+  display: flex;
+  gap: 16px;
+}
+
+.schemaName {
+  flex-shrink: 0;
+  width: 220px;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.schemaType {
+  margin: 0;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+/* A sparse column's header, de-emphasised in place (#83). */
+.sparseHead {
+  opacity: 0.5;
+}
+
+/* ── pagination ── */
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.pagerInfo {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 16px;
+}
+
+/* `.pagerBtn`'s declarations live with `.schemaBtn` above — one rule, one voice. */

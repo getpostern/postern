@@ -1,0 +1,116 @@
+/* First run — ported from `36T-0`. Centred welcome column. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  padding-top: 40px;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 600px;
+  text-align: center;
+}
+
+.headline {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: var(--weight-medium);
+  line-height: 104%;
+}
+
+.sub {
+  color: var(--color-ink-soft);
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-style: italic;
+  line-height: 155%;
+}
+
+.cta {
+  margin-top: 4px;
+  padding: 13px 26px;
+  background: var(--color-seal);
+  border-radius: var(--radius-md);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: var(--weight-medium);
+  line-height: 20px;
+}
+.cta:hover {
+  background: var(--color-seal-deep);
+}
+
+.divider {
+  width: 120px;
+  height: 1px;
+  background: var(--color-rule);
+}
+
+.steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 56px;
+  flex-wrap: wrap;
+  max-width: 920px;
+  width: 100%;
+}
+
+.step {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.stepNum {
+  color: var(--color-seal);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: var(--weight-medium);
+  line-height: 100%;
+}
+
+.stepTitle {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: var(--weight-medium);
+  line-height: 20px;
+}
+
+.stepBody {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 150%;
+}
+
+.waiting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-top: 8px;
+  width: 100%;
+}
+
+.waitingLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 14px;
+  text-transform: uppercase;
+}

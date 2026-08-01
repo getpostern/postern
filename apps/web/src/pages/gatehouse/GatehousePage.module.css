@@ -1,0 +1,60 @@
+/* The Gatehouse page frame — ported from `1-0` (`Gatehouse main` 1202-wide column). Fluid: a
+ * max-width column, never a hard 1440. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 42px;
+  max-width: 1240px;
+}
+
+/* The one grants surface: an inline underlined link, never a table (#63, decision 10.2). */
+.agentsLink {
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-rule-strong);
+}
+.agentsLink:hover {
+  border-bottom-color: var(--color-seal);
+  color: var(--color-seal);
+}
+
+.register {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 46px;
+  flex-wrap: wrap;
+}
+
+/* Asymmetric on purpose — the ledger reads as primary (60%), the roll-up as secondary (40%). */
+.stripLeft {
+  flex: 1 1 560px;
+  min-width: 0;
+}
+
+.stripRight {
+  flex: 1 1 340px;
+  min-width: 0;
+}

@@ -1,0 +1,144 @@
+/* ConnectRecipes — values ported from Paper 2IG-0 (endpoint card + three-path strip). */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* The endpoint card. */
+.endpoint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-lg);
+}
+
+.endpointText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.endpointLabel {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.endpointValue {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  padding: 9px 18px;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-ink-a40);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+/* The three paths. */
+.paths {
+  display: flex;
+  gap: 32px;
+  padding-top: 2px;
+  flex-wrap: wrap;
+}
+
+.path {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.divider {
+  flex-shrink: 0;
+  width: 1px;
+  align-self: stretch;
+  background: var(--color-ink-a22);
+}
+
+.pathLabel {
+  color: var(--color-ink);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.pathBody {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* The stdio column's unavailability marker. Replaces the dead `.tag` (`transport: stdio`) rule:
+   .tag's box, in the small-caps treatment .recipeCopy already uses — no new token, no new size. */
+.unavailable {
+  align-self: flex-start;
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.recipe {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.recipe code {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.recipeCopy {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.pathLink {
+  align-self: flex-start;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+}

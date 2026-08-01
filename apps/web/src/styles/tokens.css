@@ -1,0 +1,116 @@
+/* Postern Console — the token layer.
+ *
+ * SOURCE OF TRUTH: Paper file 01KY3S7JMA16R0QZVSX084WWDD, page 1-0, read with
+ * `get_tokens({format:"css"})`. Every value below is reproduced VERBATIM from that
+ * output. Do NOT re-derive a hex, do NOT "improve" a value, do NOT reorder to taste —
+ * the design file is the spec (console-port-plan §7 law 10). If a token here disagrees
+ * with Paper, Paper wins and this file is corrected.
+ *
+ * The landing page (`posternLandingPage/site/css/main.css`) carries the same values under
+ * its short names (`--paper`, `--ink`, `--marigold`, …). The two sets stay in lockstep;
+ * the app keeps the namespaced names because it has six sectors and four states to name.
+ *
+ * THREE DOCUMENTED NORMALISATIONS, and nothing else (spec `console-ground` §"Token rules"):
+ *   1. `--leading-tight`  Paper: `110.00000000000001%`  ->  `1.1`   (float artifact; unitless)
+ *   2. `--leading-snug`   Paper: `130%`                 ->  `1.3`   (unitless)
+ *   3. `--leading-normal` Paper: `150%`                 ->  `1.5`   (unitless)
+ * Unitless line-heights inherit as a ratio rather than as a computed length, which is what
+ * a nested type scale needs. `--state-error` stays the REFERENCE `var(--color-seal)` exactly
+ * as Paper holds it — flattening it to a hex would lose the statement that "error" IS the seal.
+ */
+
+:root {
+  /* --- ground + ink ------------------------------------------------------ */
+  --color-paper: #F5EDDA;
+  --color-paper-raised: #FDF8EC;
+  --color-paper-inset: #ECE2C8;
+  --color-ink: #2A2118;
+  --color-ink-soft: #2A2118CC;
+  --color-faded: #6E6048;
+
+  /* --- rules and hairlines. NEVER a `color:` value (enforced by contrast.test.ts) --- */
+  --color-rule: #2A211840;
+  --color-rule-strong: #2A211866;
+
+  /* --- the seal ---------------------------------------------------------- */
+  --color-seal: #B83E15;
+  --color-seal-deep: #8F2E10;
+
+  /* --- sector inks: one ink per sector, never borrowed across sectors ----- */
+  --sector-finance: #E7A42A;
+  --sector-health: #E9795E;
+  --sector-mail: #7B559E;
+  --sector-contacts: #5877C0;
+  --sector-calendar: #3C7247;
+  --sector-home: #D26A8B;
+
+  /* --- state inks: a SEPARATE axis from sector ink. Healthy is quiet. ----- */
+  --state-ok: #3C7247;
+  --state-attention: #E7A42A;
+  --state-error: var(--color-seal);
+  --state-idle: #6E6048;
+
+  /* --- ink alphas: rules, borders, hairlines. NEVER a `color:` value. ----- */
+  --color-ink-a15: #2A211826;
+  --color-ink-a22: #2A211838;
+  --color-ink-a25: #2A211840;
+  --color-ink-a40: #2A211866;
+
+  /* --- card ground ------------------------------------------------------- */
+  --color-card: #FDF8EC;
+
+  /* --- families: five tokens, three vendored families (see fonts.css) ----- */
+  --font-display: "Cormorant Garamond", serif;
+  --font-body: "EB Garamond", serif;
+  --font-sc: "Cormorant Garamond", serif;
+  --font-mono: "Courier Prime", monospace;
+  --font-type: "Courier Prime", monospace;
+
+  /* --- type scale -------------------------------------------------------- */
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 17px;
+  --text-lg: 21px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+  --text-3xl: 56px;
+
+  /* --- weights ----------------------------------------------------------- */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* --- tracking ---------------------------------------------------------- */
+  --tracking-label: 0.14em;
+  --tracking-wide: 0.24em;
+  --tracking-tight: -0.01em;
+  --tracking-mono: 0.01em;
+
+  /* --- leading (normalised to unitless — see the header) ------------------ */
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+
+  /* --- layout. `--container-content` is a MAX-width, never a width. ------- */
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --container-content: 1240px;
+
+  /* --- spacing ----------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* --- radii ------------------------------------------------------------- */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 7px;
+}

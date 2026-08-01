@@ -1,0 +1,35 @@
+/* SectorChip.
+ *
+ * The specimen's own colours are literal hexes inside the SVG (accepted illustrations — see the
+ * header of SectorChip.tsx). This file must never set a fill or a stroke. Only the label's
+ * typography and the shared "off / not yet" opacity live here. */
+
+.mark {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Chip + name: the law's chip lockup (landing file `sector-chips-15`, node H8K-0). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.label {
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 19px;
+}
+
+/* The "off / not yet" state — build-notes §11.3. Shared by ungranted grant toggles and first-run's
+ * WAITING row. The value is 0.38 exactly; the port test asserts this declaration. */
+.dimmed {
+  opacity: 0.38;
+}
+
+.labelDimmed {
+  color: var(--color-faded);
+}

@@ -1,0 +1,99 @@
+/* Who came through — the per-agent roll-up. Ported from `9S0-0`. */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 6px;
+}
+
+.title {
+  flex-shrink: 0;
+  color: var(--color-ink-soft);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.hairline {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--color-rule);
+}
+
+.more {
+  flex-shrink: 0;
+  color: var(--color-seal);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+.more:hover {
+  color: var(--color-seal-deep);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--color-ink-a15);
+}
+.row:last-child {
+  border-bottom: 1px solid var(--color-ink-a15);
+}
+
+.agent {
+  flex-grow: 1;
+  min-width: 0;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The passage cell only ever holds a SERVED value now — a relative time, or `never` for a key that
+ * has genuinely not been used (#106 §2a: the unserved arm renders no cell at all). So there is one
+ * treatment, the plain mono clock, and the `[data-served]` modifier that used to flip the italic
+ * "not yet served" register into it is gone with the sentence it existed for. Mono at 12px matches
+ * `.agent` beside it — this is a value in a row of values, not a note. */
+.passage {
+  flex-shrink: 0;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  text-align: right;
+}
+
+.empty {
+  padding: 12px 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.emptyLink {
+  color: var(--color-seal);
+}
+.emptyLink:hover {
+  color: var(--color-seal-deep);
+}

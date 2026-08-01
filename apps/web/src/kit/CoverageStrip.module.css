@@ -1,0 +1,39 @@
+/* CoverageStrip — a row of "big figure + small-caps label" stats. The figure is service truth
+ * (a query() count), and while it loads the caller passes `value: undefined` so a <Skeleton> shows
+ * rather than an em-dash at hero size (#60). Type scale + label treatment from the app tokens. */
+
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.figure {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-medium);
+  line-height: 1.1;
+}
+
+.label {
+  color: var(--color-faded);
+  font-family: var(--font-sc);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  line-height: 12px;
+  text-transform: uppercase;
+}
+
+.sub {
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}

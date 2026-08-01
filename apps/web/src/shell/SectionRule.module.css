@@ -1,0 +1,31 @@
+/* SectionRule — small-caps label · hairline · optional right-hand gloss. Ported from `2B-0`. */
+
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.label {
+  flex-shrink: 0;
+  color: var(--color-ink-soft);
+  font-family: var(--font-sc);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.hairline {
+  flex: 1 1 0;
+  height: 1px;
+  background: var(--color-rule);
+}
+
+.gloss {
+  flex-shrink: 0;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+}

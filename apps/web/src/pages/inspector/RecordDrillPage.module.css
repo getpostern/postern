@@ -1,0 +1,203 @@
+/* The record drill — exact values ported from the record-drill artboard (6AK-0 / node 6G2-0). */
+
+.recordSub {
+  margin: 0;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.columns {
+  display: flex;
+  gap: 56px;
+  width: 100%;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  flex: 1 1 0;
+  max-width: 440px;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* section header: label + a hairline that fills the rest of the row */
+.section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.sectionLabel {
+  flex-shrink: 0;
+  color: var(--color-ink);
+  font-family: var(--font-sc);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.sectionRule {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--color-ink-a22);
+}
+
+/* the left column's sections carry their own 12px gap to the field list */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fields {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.field {
+  display: flex;
+  gap: 16px;
+  padding-block: 8px;
+  border-bottom: 1px solid var(--color-ink-a22);
+}
+.field:last-child {
+  border-bottom: 0;
+}
+
+.fieldKey {
+  flex-shrink: 0;
+  width: 130px;
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 17px;
+}
+
+.fieldVal {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 17px;
+  word-break: break-word;
+}
+
+.fieldValMuted {
+  color: var(--color-faded);
+}
+
+/* raw block */
+.rawScroll {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+}
+
+.raw {
+  margin: 0;
+  padding: 18px 20px;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 20px;
+  white-space: pre;
+}
+
+.rawEmpty {
+  padding: 18px 20px;
+  background: var(--color-paper-inset);
+  border: 1px solid var(--color-ink-a22);
+  border-radius: var(--radius-md);
+  color: var(--color-faded);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+
+.rawCaption {
+  margin: 0;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 19px;
+  max-width: 520px;
+}
+
+/* #57 — the per-record live drill, WIRED (`POST /api/operator/fetch_live`). It used to be drawn
+ * permanently disabled: `cursor: not-allowed` + `opacity` are gone, and the ink is full ink, because a
+ * disabled treatment on a working control is the same lie as an enabled one on a dead control. The
+ * pressed state keeps the faded ink, which is what a busy control already reads as everywhere else. */
+.liveDrill {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.liveBtn {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--color-ink-a25);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 18px;
+  cursor: pointer;
+}
+.liveBtn:hover {
+  background: var(--color-paper-raised);
+}
+.liveBtn:disabled {
+  color: var(--color-faded);
+  cursor: progress;
+}
+
+/* What the button will do, said before it is pressed (#106 §3). Was 12.5px italic: 12.5px is not a step
+ * on the token scale (11 → 13), and in Paper it appears only on dense mono/data lines — 81 nodes carry
+ * it, none of them italic, none of them prose. This is a two-sentence instruction beside a control, so
+ * it gets the smallest real body step, upright. */
+.liveReason {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+  max-width: 520px;
+}
+
+/* The live answer's own block — same 12px section rhythm as the column it sits in (`.right`), so the
+ * "Live · straight from the source" header reads as a section rather than a caption on the button. */
+.liveResult {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* A live fetch that could not happen — the SERVED reason, never a synthesised one. Body ink so it is
+ * read, not decorative; this is the answer to a button the person just pressed. */
+.liveFailed {
+  color: var(--color-ink-soft);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 19px;
+  max-width: 520px;
+}

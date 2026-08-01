@@ -1,0 +1,52 @@
+/* ZeroState — "nothing connected" and "nothing matched" are DIFFERENT sentences (build-notes
+ * §14.1e); the type makes them different call sites. Ported from `FIC-0` (unconnected) and `FIQ-0`
+ * (filtered). No illustration, no mascot: a line of the display serif, a reason, at most one action,
+ * on paper-inset. The Libre Caslon headline in Paper ports to --font-display (finding 1.2). */
+
+.zero {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 30px 32px;
+  background: var(--color-paper-inset);
+  border-radius: var(--radius-md);
+}
+
+.headline {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 28px;
+}
+
+.reason {
+  max-width: 470px;
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 21px;
+}
+
+.meta {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.actionRow {
+  padding-top: 8px;
+}
+
+.action {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 20px;
+}

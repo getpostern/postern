@@ -1,0 +1,43 @@
+/* NEEDS ATTENTION band — ported from `48G-0` / `4LK-0`. The banner rows themselves are the kit
+ * <AttentionBanner> (its own seal-left shell); this owns only the header and the row stack. */
+
+.band {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.label {
+  color: var(--color-ink);
+  font-family: var(--font-sc);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.count {
+  color: var(--color-seal);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* The provider mark rides inline with the cause line (the kit banner has no dedicated icon slot). */
+.cause {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}

@@ -1,0 +1,54 @@
+/* INSPECT THE RECORDS teaser — ported from the lens's inspect band (LG-0). Title + italic sub on the
+ * left, an "Open the inspector →" link on the right. That is the whole band.
+ *
+ * `.rule`, `.colHints` and `.colHint` were DELETED with the column-hint row (#107 §2) — the hairline
+ * separated the top from that row and now separates nothing, so it went with it rather than staying
+ * as a rule under a single line of copy. The column direction stays here so `.top` still stretches to
+ * the full band width (as a plain row-flex child it would shrink to its content and the link would
+ * stop sitting at the right edge). */
+
+.teaser {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.lead {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.title {
+  color: var(--color-ink);
+  font-family: var(--font-sc);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.sub {
+  color: var(--color-faded);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 18px;
+  max-width: 660px;
+}
+
+.open {
+  flex-shrink: 0;
+  color: var(--color-seal);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 18px;
+  border-radius: var(--radius-sm);
+}

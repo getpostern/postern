@@ -1,0 +1,65 @@
+/* Postern Console — @font-face, LOCAL ONLY.
+ *
+ * Six binaries, three families, committed to `apps/web/public/fonts/` (see the README
+ * beside them). Mirrors the landing's declarations (`posternLandingPage/site/css/main.css`
+ * lines 7–48) so the two surfaces render identically.
+ *
+ * NO off-origin `@import`. NO Google-Fonts CDN. NO third-party origin of ANY kind — not for
+ * fonts, icons, scripts or institution logos, now or ever (console-port-plan §7 law 3).
+ * The deleted `styles/tokens/fonts.css:15` pulled the families from the Google-Fonts CDN and
+ * IS issue #81; this file is its replacement. `contrast.test.ts` fails the build if a
+ * non-local `//` URL reappears in any stylesheet under `apps/web/src`.
+ *
+ * Coverage was verified against all 47 artboards before vendoring (Paper `find_nodes`,
+ * 2026-07-23): every italic node in the file is `--font-body` at weight 400; there is no
+ * Cormorant italic, no Courier Prime italic, no weight 300 and no weight 800 anywhere. The
+ * six cuts below cover the design. A future cut is another committed binary, never a fetch.
+ */
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: url("/fonts/cormorant-garamond-var.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: url("/fonts/cormorant-garamond-500-italic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("/fonts/eb-garamond-var.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("/fonts/eb-garamond-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: url("/fonts/courier-prime-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Courier Prime";
+  src: url("/fonts/courier-prime-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
