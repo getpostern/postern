@@ -36,7 +36,7 @@
     "test:db:reap": "bash scripts/test-db.sh --reap"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "ical.js": "^2.2.1",
     "imapflow": "^1.4.0",
     "pg": "^8.13.0",
