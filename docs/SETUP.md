@@ -17,7 +17,13 @@ The compose file pulls the published image, starts Postgres, applies migrations,
 
 **Write the password to `.env`; do not put it in front of the command.** Compose reads `.env` for every subcommand, and Postgres bakes the value into its data directory on first boot. An inline `POSTGRES_PASSWORD=… docker compose up` generates a fresh password each time you run it: the second `up` cannot authenticate against the database the first one created, and every other compose subcommand fails on the missing variable before it does anything at all.
 
-- **Console:** <http://localhost:8787>
+- **Console:** <http://localhost:8787> — on the gateway machine itself. Running the gate on a headless box (a Mac mini in a closet, a home server)? The Console deliberately never leaves that machine — so from your laptop, tunnel loopback over SSH and browse the same address locally:
+
+  ```bash
+  ssh -N -L 127.0.0.1:8787:127.0.0.1:8787 <your-box>   # leave it running, then open http://localhost:8787 here
+  ```
+
+  That is the supported way in from another device — the tunnel arrives on the box *as* loopback, encrypted and authenticated by your SSH key. Don't bind the port to the LAN or serve it over a tunnel service instead: the owner's surface answering only on loopback **is** the security model, not a limitation (§ Remote access has the full story).
 - **MCP edge for agents:** `http://127.0.0.1:8788/mcp` (bearer-gated — nothing reaches it without a key)
 - **Health:** `curl -s localhost:8787/healthz` → `{"status":"ok"}`
 
