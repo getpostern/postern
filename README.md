@@ -10,6 +10,28 @@ Postern runs on your own machine, and there is nothing in the middle: no account
 
 *The Gatehouse — a real gate with four sources connected, everything freshly synced. This is `localhost:8787` once your first sources are in.*
 
+## Set it up
+
+Postern runs on any computer that stays on — the one in front of you, or a spare machine at home. You need one thing installed first: [Docker](https://docs.docker.com/get-docker/) (free, and its site walks you through it). After that it's three lines and about five minutes.
+
+In plain words, the three lines: fetch Postern, give its database a password of its own, start everything.
+
+```bash
+git clone https://github.com/getpostern/postern.git && cd postern
+echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" > .env
+docker compose up -d
+```
+
+Now open **<http://localhost:8787>** in your browser. That page is the Console — your gate's control room. It walks you through connecting your first source, and [the field guides](https://getpostern.com/guides) walk every provider screen by screen, with pictures.
+
+Three things worth knowing, each the answer to a real question:
+
+- **"Why the password line?"** The database keeps the first password it is ever given, so it must live in the `.env` file, where every later start finds the same one — never typed in front of the command. Letters and numbers only; the line above generates a safe one for you.
+- **"I installed it on one machine — how do I use it from my laptop?"** The Console answers only on the machine it runs on. That is the security model, not a limitation: your gate's controls should not be reachable over the network. One command brings them to wherever you are — `ssh -N -L 127.0.0.1:8787:127.0.0.1:8787 <your-box>` — leave it running, and `http://localhost:8787` opens on your laptop too. Everything *else* reaching the gate from outside runs on [Tailscale](https://tailscale.com): your own devices (your phone's health data, agents on your laptop) over your private tailnet, and hosted agents — claude.ai, ChatGPT — over its Funnel, a public HTTPS address where TLS still ends on your machine. All of it opt-in, none of it on by default; [`docs/SETUP.md`](docs/SETUP.md) § Remote access walks each tier.
+- **"What did I just install?"** One published, signed image (`ghcr.io/getpostern/postern`) and a database, listening only on your own machine (`127.0.0.1`), nothing else. Only `docker-compose.yml` is truly needed — download that one file if you would rather not clone.
+
+Building from source instead? `docker-compose.dev.yml` carries the `build:` key, and [`CONTRIBUTING.md`](CONTRIBUTING.md) has the rest. The complete self-host path — every provider, every trap — is [`docs/SETUP.md`](docs/SETUP.md); if an agent is doing the setup on your behalf, hand it [`AGENTS.md`](AGENTS.md) — the same path written as a contract, each step marked human-required or automatable.
+
 ## What it removes
 
 Postern is best understood by what stops being your problem.
@@ -25,28 +47,6 @@ What it deliberately does **not** do: no LLM runs inside the gateway, no cross-d
 - **One place.** One surface, one grant. A granted sector covers reading *and* acting across every provider in it.
 - **Lightning fast.** Reads come from a local cache in milliseconds. `fetch_live` is the one read path that touches a source, and actions add no gateway overhead around the single unavoidable dispatch.
 - **Harness-agnostic.** MCP, REST, or whatever comes next — every edge is an adapter over the same seven core primitives. There is never a second implementation.
-
-## Quickstart
-
-You need Docker and about five minutes. No `.env` file is required to get to a running Console.
-
-```bash
-git clone https://github.com/getpostern/postern.git && cd postern
-echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" > .env
-docker compose up -d
-```
-
-(Only `docker-compose.yml` is actually needed — download that one file if you would rather not clone.)
-
-Then open **<http://localhost:8787>** — that is the Console. It walks you through connecting your first source.
-
-The compose file pulls a published multi-arch image (`ghcr.io/getpostern/postern`) and publishes every port on `127.0.0.1` only.
-
-**The password has to go in `.env`, not in front of the command.** It has no default on purpose — compose refuses to start without one — and Postgres bakes it into the data directory on first boot. Set it inline and you generate a *different* one on every invocation: the second `docker compose up` cannot authenticate, and every other compose subcommand fails outright on the missing variable. Keep it alphanumeric, too: it is substituted into a connection URL as literal text, so `openssl rand -hex 24` is the safe generator (`base64` output contains `/` and `+`, which break the URL).
-
-Building from source instead? `docker-compose.dev.yml` carries the `build:` key, and [`CONTRIBUTING.md`](CONTRIBUTING.md) has the rest.
-
-**Next:** [`docs/SETUP.md`](docs/SETUP.md) is the full self-host path — every provider, the traps, and how to connect an agent. If you *are* an agent doing this setup on someone's behalf, read [`AGENTS.md`](AGENTS.md) instead: it is the same path written as a contract, with each step marked human-required or automatable.
 
 ## The agent surface
 
