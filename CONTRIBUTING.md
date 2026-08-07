@@ -90,7 +90,7 @@ which appends `Signed-off-by: Your Name <your@email>`. That line is your stateme
 
 ### License of your contribution
 
-Inbound is the same as outbound: **AGPL-3.0-or-later**. By submitting, you agree your contribution is licensed under it. The Postern name and door mark are not licensed with the code — see [`TRADEMARK.md`](TRADEMARK.md).
+Inbound is the same as outbound: **Apache-2.0**. By submitting, you agree your contribution is licensed under it — section 5 of the licence says the same thing, and the sign-off is how you state it deliberately. The Postern name and door mark are not licensed with the code — see [`TRADEMARK.md`](TRADEMARK.md).
 
 ## Conduct
 

@@ -137,7 +137,7 @@
       <span><b>V1:</b> neutral · lossless · no-correlation gateway</span>
       <span><b>Connectors:</b> hand-built core → agent-authored</span>
       <span><b>Self-host first</b></span>
-      <span><b>AGPL</b> core · <b>Apache</b> SDK</span>
+      <span><b>Apache-2.0</b> throughout</span>
     </div>
     <div class="toc">
       <a href="#p"><b>00</b> Design principles</a>
@@ -419,13 +419,13 @@
 <pre>pci/
   packages/
     sdk/              <span class="c">@pci/sdk    · Apache-2.0   ← Connector interface + normalized schema specs + helpers</span>
-    server/           <span class="c">@pci/server · AGPL-3.0     ← store, core API, MCP+REST adapters, auth, audit, registry</span>
+    server/           <span class="c">@pci/server · Apache-2.0   ← store, core API, MCP+REST adapters, auth, audit, registry</span>
     connectors/
       simplefin/      <span class="c">· Apache    (depends on @pci/sdk)</span>
       home-assistant/ <span class="c">· Apache</span>
       plaid/  whoop/  gmail/  outlook/  google-calendar/  google-contacts/   <span class="c">· Apache</span>
   apps/
-    web/              <span class="c">· AGPL       ← the Console UI (Next.js, over REST)</span>
+    web/              <span class="c">· Apache-2.0 ← the Console UI (Next.js, over REST)</span>
   docker-compose.yml  <span class="c">← Postgres + server + console, one command</span></pre>
     <p class="narrow">The current scaffold is the <strong>seed of <code class="inl">packages/server</code></strong> (plus the connector contract that moves into <code class="inl">packages/sdk</code>). The split is a near-term refactor, not a rewrite.</p>
   </section>
@@ -433,13 +433,12 @@
   <!-- 07 -->
   <section id="lic">
     <div class="sec-no"><b>07</b> &nbsp;Licensing</div>
-    <h2>Permissive ecosystem, protected core.</h2>
+    <h2>Permissive throughout.</h2>
     <ul class="tight">
-      <li><strong><code class="inl">@pci/sdk</code> and all connectors: Apache-2.0.</strong> Permissive on purpose — anyone freely builds, ships, and combines connectors. The ecosystem is how an OSS project gets breadth cheaply, so friction here must be zero.</li>
-      <li><strong>Server and Console: AGPL-3.0.</strong> A hosted clone must open-source its modifications — protecting a future hosted offering while keeping the project fully open.</li>
-      <li><strong>Contributions: CLA.</strong> Because a hosted/dual-licensed offering is intended, a lightweight Contributor License Agreement preserves the right to relicense/host.</li>
+      <li><strong>Everything: Apache-2.0</strong> — SDK, connectors, server, Console. An AGPL SDK cannot be linked by a commercial connector or agent author without opening their own source, which forecloses the third-party ecosystem the platform exists to have.</li>
+      <li><strong>The moat is not the licence.</strong> It is the broker position with the identity providers, the registry, and the trademark — none of which a copyleft clause protects, and all of which survive a fork.</li>
+      <li><strong>Contributions: DCO sign-off</strong>, inbound under the same terms. No CLA: Apache is the terminal choice here, and keeping later components proprietary needs no relicensing of what already shipped.</li>
     </ul>
-    <p class="narrow">Every file carries an <code class="inl">SPDX-License-Identifier</code> header.</p>
   </section>
 
   <!-- 08 -->

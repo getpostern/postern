@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Postern — the operator Console (React 18 + Vite + TS).",
-  "license": "AGPL-3.0-or-later",
+  "license": "Apache-2.0",
   "homepage": "https://github.com/getpostern/postern#readme",
   "repository": {
     "type": "git",

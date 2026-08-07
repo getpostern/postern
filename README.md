@@ -32,6 +32,8 @@ Three things worth knowing, each the answer to a real question:
 
 Building from source instead? `docker-compose.dev.yml` carries the `build:` key, and [`CONTRIBUTING.md`](CONTRIBUTING.md) has the rest. The complete self-host path — every provider, every trap — is [`docs/SETUP.md`](docs/SETUP.md); if an agent is doing the setup on your behalf, hand it [`AGENTS.md`](AGENTS.md) — the same path written as a contract, each step marked human-required or automatable.
 
+One ask: if you get it running, say what broke — [open an issue](https://github.com/getpostern/postern/issues) for anything, even a paper cut. Early reports decide what gets fixed first.
+
 ## What it removes
 
 Postern is best understood by what stops being your problem.
@@ -88,7 +90,9 @@ Home Assistant is the one that also **acts**: the action catalog is served from 
 
 ## License and model
 
-The whole gateway is **open source under [AGPL-3.0-or-later](LICENSE)** — the engine, every connector, both agent edges, the Console. Nothing here is a crippled tier: the open core is the product, not a demo of it.
+The whole gateway is **open source under [Apache-2.0](LICENSE)** — the engine, every connector, both agent edges, the Console. Nothing here is a crippled tier: the open core is the product, not a demo of it.
+
+Apache rather than a copyleft licence for one reason: a connector or an agent written against this gateway should be publishable by anyone, on any terms they like, including inside a closed product. A licence that forces a third-party author to open their own source forecloses the ecosystem this exists to have.
 
 The paid surfaces sit *beside* it, not inside it — a contextual-memory tier, a person-to-person trust layer, and hosted convenience for people who would rather not run a box. None of them is a gate on anything in this repository.
 

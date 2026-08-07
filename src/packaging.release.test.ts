@@ -147,7 +147,7 @@ describe("Dockerfile: what a bare `docker run` gets", () => {
     // and renders no README. `licenses` must match LICENSE and both package.json files.
     expect(dockerfile).toContain("org.opencontainers.image.source=");
     expect(dockerfile).toContain("https://github.com/getpostern/postern");
-    expect(dockerfile).toContain('org.opencontainers.image.licenses="AGPL-3.0-or-later"');
+    expect(dockerfile).toContain('org.opencontainers.image.licenses="Apache-2.0"');
     expect(dockerfile).toContain("org.opencontainers.image.description=");
   });
 
@@ -210,9 +210,13 @@ describe("the image says how to publish it safely", () => {
 });
 
 describe("package identity and license", () => {
-  it("the gateway package is Postern, AGPL, node>=22 — and still private", () => {
+  it("the gateway package is Postern, Apache-2.0, node>=22 — and still private", () => {
     expect(pkg.name).toBe("postern");
-    expect(pkg.license).toBe("AGPL-3.0-or-later");
+    // The tree relicensed AGPL-3.0-or-later -> Apache-2.0: an AGPL SDK cannot be linked by a
+    // commercial connector or agent author without opening their source, which forecloses the
+    // third-party ecosystem the platform is. This assertion, the Dockerfile label and LICENSE
+    // must agree; the three drifting apart is how a repo ends up claiming two licences at once.
+    expect(pkg.license).toBe("Apache-2.0");
     expect((pkg.engines as Record<string, string>).node).toBe(">=22");
     expect((pkg.repository as Record<string, string>).url).toContain("getpostern/postern");
     // npm publication is deliberately out of scope — private:true is what keeps an accidental
@@ -222,8 +226,18 @@ describe("package identity and license", () => {
 
   it("the Console package matches it", () => {
     expect(consolePkg.name).toBe("@postern/console");
-    expect(consolePkg.license).toBe("AGPL-3.0-or-later");
+    expect(consolePkg.license).toBe("Apache-2.0");
     expect(consolePkg.private).toBe(true);
+  });
+
+  it("LICENSE is the Apache-2.0 text itself, not just a claim about it", () => {
+    // The metadata assertions above prove the three CLAIMS agree with each other — they never
+    // read the LICENSE body, so Apache metadata over an AGPL LICENSE passed green. That gap is
+    // the exact drift this block exists to refuse, so the text is read, not trusted.
+    const license = read("LICENSE");
+    expect(license).toContain("Apache License");
+    expect(license).toContain("Version 2.0, January 2004");
+    expect(license).not.toMatch(/GNU AFFERO|AGPL/);
   });
 
   it("the wire/env/DB identifiers keep their historical pci prefix", () => {

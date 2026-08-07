@@ -1,18 +1,18 @@
 # Trademark and brand policy
 
-The **code** in this repository is free software under [AGPL-3.0-or-later](LICENSE). The **name and the mark** are not part of that grant.
+The **code** in this repository is open source under [Apache-2.0](LICENSE). The **name and the mark** are not part of that grant.
 
 ## What this covers
 
 - The name **Postern**.
 - The **door mark** — the Postern logo and its variants, in every rendering that ships in this repository (including `docs/design/logo/`).
 
-Copyright and trademark rights in these are held by Neelabh Kumar and are **not licensed** with the source. AGPL-3.0 grants rights over copyrightable software; it grants nothing over names and marks, and this file simply says so out loud so nobody has to guess.
+Copyright and trademark rights in these are held by Neelabh Kumar and are **not licensed** with the source. **Section 6 of Apache-2.0 withholds trademark rights expressly** — the licence grants copyright and patent rights over the software and says nothing may be taken in the name or the marks. This file simply says so out loud so nobody has to guess.
 
 ## What you may do without asking
 
 - **Say what your software is.** "Built on Postern", "a Postern connector", "compatible with Postern", "a fork of Postern" — accurate, descriptive statements of fact are always fine and always will be.
-- **Run it, modify it, and distribute it** under the AGPL, including commercially. That is the whole point of the license.
+- **Run it, modify it, and distribute it** under Apache-2.0, including commercially, and including inside closed-source products. That is the whole point of the license.
 - **Keep the name in place while you contribute back.** Patches, forks-for-a-pull-request, and personal builds do not need renaming.
 - **Write about it.** Reviews, tutorials, talks, comparisons, screenshots.
 

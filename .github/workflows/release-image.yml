@@ -81,6 +81,12 @@ jobs:
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
           images: ghcr.io/${{ github.repository }}
+          # The licence label is pinned here, deliberately. metadata-action derives
+          # org.opencontainers.image.licenses from GitHub's DETECTED licence on the repo, which
+          # lags the tree — the 0.1.0 image shipped labelled AGPL-3.0 exactly that way, over a
+          # Dockerfile that said otherwise. A custom label here wins over the derived one.
+          labels: |
+            org.opencontainers.image.licenses=Apache-2.0
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -108,10 +114,12 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          # OCI labels are declared in the Dockerfile — including
-          # org.opencontainers.image.source, which is what links the published package back to this
-          # repository. Without it the package has no repository, defaults to private, and renders no
-          # README on its page. metadata-action adds the per-build ones (revision, created).
+          # Labels come from TWO places, and on every colliding key the metadata-action value WINS:
+          # buildx applies --label AFTER the Dockerfile LABELs. So the Dockerfile's labels are the
+          # floor, and this line is the authority — it carries the pinned licence label above plus
+          # org.opencontainers.image.source, which links the published package back to this
+          # repository (without it the package defaults to private and renders no README). Do not
+          # delete this line to "let the Dockerfile win"; that severs the package↔repo link.
           labels: ${{ steps.meta.outputs.labels }}
           # SLSA provenance and an SBOM, attached to the manifest list. `mode=max` records the full
           # build definition rather than just the outputs.

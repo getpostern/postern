@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Postern \u2014 the Personal Context Gateway: connect the sectors of your life once, then read them and act on them from any agent through one neutral surface.",
-  "license": "AGPL-3.0-or-later",
+  "license": "Apache-2.0",
   "homepage": "https://github.com/getpostern/postern#readme",
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 # Third-party notices
 
-Postern itself is licensed under the **GNU Affero General Public License v3.0 or later** — the full
+Postern itself is licensed under the **Apache License, Version 2.0** — the full
 text is in [`LICENSE`](LICENSE). This file covers everything Postern *redistributes* that somebody
 else wrote: the vendored font binaries, and the npm packages that ride along in the published Docker
 image and in the built Console bundle.
@@ -82,7 +82,7 @@ then read the `license` field of each resolved `package.json`.
 Across all 405 distinct packages in both lockfiles the additional licences seen are Apache-2.0 (18),
 BSD-2-Clause (9), BSD-3-Clause (5), BlueOak-1.0.0 (3), MIT-0 (3), Python-2.0 (1, `argparse`),
 CC0-1.0 (1, `mdn-data`) and CC-BY-4.0 (1, `caniuse-lite`). Every one is a permissive licence
-compatible with distributing this AGPL-licensed work; none is copyleft over Postern's own source.
+compatible with distributing this Apache-2.0 work; none is copyleft over Postern's own source.
 
 ### The two with obligations worth naming
 

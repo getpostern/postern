@@ -38,14 +38,14 @@ ENV NODE_ENV=production
 
 # OCI image metadata. `source` is load-bearing, not decoration: GHCR links a package to its repository
 # through THIS label — without it the published package has no repo, defaults to private, and renders
-# no README on its page. `licenses` is an SPDX expression (AGPL-3.0-or-later, matching LICENSE and
+# no README on its page. `licenses` is an SPDX expression (Apache-2.0, matching LICENSE and
 # both package.json files); `description`/`title`/`url` are what a registry lists the image by.
 LABEL org.opencontainers.image.title="Postern" \
       org.opencontainers.image.description="Postern — the Personal Context Gateway: connect the sectors of your life once, then read them and act on them from any agent through one neutral surface." \
       org.opencontainers.image.source="https://github.com/getpostern/postern" \
       org.opencontainers.image.url="https://github.com/getpostern/postern" \
       org.opencontainers.image.documentation="https://github.com/getpostern/postern#readme" \
-      org.opencontainers.image.licenses="AGPL-3.0-or-later" \
+      org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.vendor="Postern"
 
 # Production-only deps (omit dev: no tsx, no compilers in the runtime image).
