@@ -22,7 +22,7 @@ echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" > .env
 docker compose up -d
 ```
 
-Now open **<http://localhost:8787>** in your browser. That page is the Console — your gate's control room. It walks you through connecting your first source, and [the field guides](https://getpostern.com/guides) walk every provider screen by screen, with pictures.
+Now open **<http://localhost:8787>** in your browser. That page is the Console — your gate's control room. It walks you through connecting your first source, and [the field guides](https://docs.getpostern.com) walk every provider screen by screen, with pictures.
 
 Three things worth knowing, each the answer to a real question:
 
@@ -30,7 +30,7 @@ Three things worth knowing, each the answer to a real question:
 - **"I installed it on one machine — how do I use it from my laptop?"** The Console answers only on the machine it runs on. That is the security model, not a limitation: your gate's controls should not be reachable over the network. One command brings them to wherever you are — `ssh -N -L 127.0.0.1:8787:127.0.0.1:8787 <your-box>`, where `<your-box>` is that machine's name or IP, however you normally SSH into it (`anna@mac-mini.local`, `192.168.1.42`, a Tailscale name) — leave it running, and `http://localhost:8787` opens on your laptop too. Everything *else* reaching the gate from outside runs on [Tailscale](https://tailscale.com): your own devices (your phone's health data, agents on your laptop) over your private tailnet, and hosted agents — claude.ai, ChatGPT — over its Funnel, a public HTTPS address where TLS still ends on your machine. All of it opt-in, none of it on by default; [`docs/SETUP.md`](docs/SETUP.md) § Remote access walks each tier.
 - **"What did I just install?"** One published, signed image (`ghcr.io/getpostern/postern`) and a database, listening only on your own machine (`127.0.0.1`), nothing else. Only `docker-compose.yml` is truly needed — download that one file if you would rather not clone.
 
-Building from source instead? `docker-compose.dev.yml` carries the `build:` key, and [`CONTRIBUTING.md`](CONTRIBUTING.md) has the rest. The complete self-host path — every provider, every trap — is [`docs/SETUP.md`](docs/SETUP.md); if an agent is doing the setup on your behalf, hand it [`AGENTS.md`](AGENTS.md) — the same path written as a contract, each step marked human-required or automatable.
+Building from source instead? `docker-compose.dev.yml` carries the `build:` key, and [`CONTRIBUTING.md`](CONTRIBUTING.md) has the rest. The complete self-host path — every provider, every trap — is [`docs/SETUP.md`](docs/SETUP.md); if an agent is doing the setup on your behalf, hand it [`setup-with-your-agent.md`](setup-with-your-agent.md) — the same path written as a contract for the agent, every step marked human or automatable, verified end to end by a first-time user's agent on a clean machine.
 
 One ask: if you get it running, say what broke — [open an issue](https://github.com/getpostern/postern/issues) for anything, even a paper cut. Early reports decide what gets fixed first.
 
@@ -76,15 +76,15 @@ From the agent's side it looks like this — one gate, three agents each holding
 
 | source | how you connect it | sectors | screen by screen |
 |---|---|---|---|
-| SimpleFIN | paste a setup token | finance | [field guide](https://getpostern.com/guides/simplefin) |
-| Plaid | your own Plaid app + a hosted Link session | finance | [field guide](https://getpostern.com/guides/plaid) |
-| iCloud | Apple ID + an app-specific password | mail, calendar, contacts | [field guide](https://getpostern.com/guides/icloud) |
-| Gmail | address + an app password (IMAP) | mail | [field guide](https://getpostern.com/guides/gmail) |
-| Microsoft | your own OAuth app | mail, calendar, contacts | [field guide](https://getpostern.com/guides/microsoft) |
-| Google | your own OAuth app | calendar, contacts | [field guide](https://getpostern.com/guides/google) |
-| WHOOP | your own OAuth app | health | [field guide](https://getpostern.com/guides/whoop) |
-| Apple Health | a Shortcut on your iPhone pushes to your gateway | health | [field guide](https://getpostern.com/guides/apple-health) |
-| Home Assistant | instance URL + a long-lived token | home | [field guide](https://getpostern.com/guides/home-assistant) |
+| SimpleFIN | paste a setup token | finance | [field guide](https://docs.getpostern.com/connect/simplefin) |
+| Plaid | your own Plaid app + a hosted Link session | finance | [field guide](https://docs.getpostern.com/connect/plaid) |
+| iCloud | Apple ID + an app-specific password | mail, calendar, contacts | [field guide](https://docs.getpostern.com/connect/icloud) |
+| Gmail | address + an app password (IMAP) | mail | [field guide](https://docs.getpostern.com/connect/gmail) |
+| Microsoft | your own OAuth app | mail, calendar, contacts | [field guide](https://docs.getpostern.com/connect/microsoft) |
+| Google | your own OAuth app | calendar, contacts | [field guide](https://docs.getpostern.com/connect/google) |
+| WHOOP | your own OAuth app | health | [field guide](https://docs.getpostern.com/connect/whoop) |
+| Apple Health | a Shortcut on your iPhone pushes to your gateway | health | [field guide](https://docs.getpostern.com/connect/apple-health) |
+| Home Assistant | instance URL + a long-lived token | home | [field guide](https://docs.getpostern.com/connect/home-assistant) |
 
 Home Assistant is the one that also **acts**: the action catalog is served from the cache and dispatched through `invoke_action`. Adding a source is a connector plus a schema-registry entry and a migration — never a control-plane change. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
@@ -107,8 +107,8 @@ Environment variables, the default database name and some log prefixes still car
 | you want | read |
 |---|---|
 | to install it and connect your sources | [`docs/SETUP.md`](docs/SETUP.md) |
-| every provider console, screen by screen — with the traps | [getpostern.com/guides](https://getpostern.com/guides) |
-| an agent to do the setup | [`AGENTS.md`](AGENTS.md) |
+| every provider console, screen by screen — with the traps | [docs.getpostern.com](https://docs.getpostern.com) |
+| an agent to do the setup | [`setup-with-your-agent.md`](setup-with-your-agent.md) |
 | you *are* an agent, connecting to someone's gate | [getpostern.com/for-agents](https://getpostern.com/for-agents) |
 | to know exactly what is trusted, and what is not | [`SECURITY.md`](SECURITY.md) |
 | to reach your gateway from away | [`docs/runbooks/remote-access.md`](docs/runbooks/remote-access.md) |

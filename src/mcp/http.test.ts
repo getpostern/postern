@@ -6,6 +6,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { AccessDenied, type AuthContext } from "../auth/index.js";
 
 // Mock resolveBearer (the only DB hit) + the core query the granted path runs.
@@ -17,7 +18,7 @@ vi.mock("../auth/index.js", async (importOriginal) => {
 });
 vi.mock("../core/query.js", () => ({ query: (...a: unknown[]) => queryMock(...a) }));
 
-const { startHttpEdge, MAX_SESSIONS } = await import("./http.js");
+const { startHttpEdge, MAX_SESSIONS, SESSION_IDLE_RECLAIM_MS } = await import("./http.js");
 const { endAgentSessions, __resetSessionRegistryForTests } = await import("./bearer.js");
 const { GC_INTERVAL_MS, BRIDGE_DENY_AUDIT_CAP } = await import("./oauth-bridge.js");
 const { queue } = await import("../audit/queue.js");
@@ -334,6 +335,369 @@ describe("the session map is bounded (#99)", () => {
     },
     60_000,
   );
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════════
+// #147 — abandoned sessions must not starve live callers. Hosted clients (claude.ai, ChatGPT) leave
+// a session behind on every new chat and never delete it; on prod the map reached MAX_SESSIONS in
+// 6 days and from then on EVERY live caller was refused while 512 zombies held the slots. At the cap
+// the edge now reclaims ONE slot — from the least-recently-used session, and only if that session
+// has been idle past the floor. The cell above (the real 512 cap, all sessions fresh) is the
+// unchanged genuine-saturation path and must stay green as-is.
+//
+// The clock is INJECTED rather than faked: fake timers next to real socket I/O are the #142 / #43
+// flake family, and a test that never crosses its own threshold cannot fail. The cap is injected
+// too, so a cell reaches it with 3 sessions instead of 512.
+// ═══════════════════════════════════════════════════════════════════════════════════
+
+describe("abandoned sessions are reclaimed at the cap (#147)", () => {
+  const CAP = 3;
+  const TOO_MANY = {
+    jsonrpc: "2.0",
+    error: { code: -32000, message: "Too many sessions" },
+    id: null,
+  };
+
+  /** A clock the test drives by hand — the only time source the capacity path reads. */
+  function fakeClock(): { now: () => number; advance: (ms: number) => void } {
+    let t = 1_700_000_000_000;
+    return {
+      now: () => t,
+      advance: (ms: number) => {
+        t += ms;
+      },
+    };
+  }
+
+  async function restartWithClock(
+    sessionDeps: Parameters<typeof startHttpEdge>[0]["sessionDeps"],
+  ): Promise<void> {
+    await edge.close();
+    auditEvents = [];
+    edge = startHttpEdge({ port: 0, audit: (e) => auditEvents.push(e), sessionDeps });
+    for (let i = 0; i < 200 && edge.port === 0; i++) await new Promise((r) => setTimeout(r, 5));
+  }
+
+  /** Open one real session and return the Mcp-Session-Id the SDK stamped on the initialize. */
+  async function openSession(): Promise<string> {
+    const r = await rawInitialize(GOOD);
+    expect(r.status).toBe(200);
+    const sid = r.headers.get("mcp-session-id");
+    await r.body?.cancel().catch(() => {});
+    expect(sid).toBeTruthy();
+    return sid!;
+  }
+
+  /** A request ON an existing session — the shape the recency stamp is taken from. */
+  async function callOnSession(sessionId: string): Promise<Response> {
+    return fetch(`http://127.0.0.1:${edge.port}/mcp`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-session-id": sessionId,
+        authorization: `Bearer ${GOOD}`,
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" }),
+    });
+  }
+
+  function capacityLines(spy: { mock: { calls: unknown[][] } }): string[] {
+    return spy.mock.calls
+      .map((c) => String(c[0]))
+      .filter((l) => l.includes("mcp_session_capacity"));
+  }
+
+  /**
+   * The CLOSED grammar of a capacity line, anchored end to end. Matching this is what makes "no
+   * bearer, no session id, nothing attacker-chosen" a structural property rather than a list of
+   * substrings someone remembered to exclude: any field appended to either line breaks the `$`.
+   */
+  const CAPACITY_LINE =
+    /^\[pci-gateway\] mcp_session_capacity (reclaim: freed the least-recently-used session after \d+s idle|refuse: no session idle long enough to reclaim) \(sessions \d+\/\d+\)$/;
+
+  it("(1) a live caller at the cap is served — the abandoned session yields its slot", async () => {
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+
+    await openSession(); // the zombie: initialized, then never heard from again
+    clock.advance(SESSION_IDLE_RECLAIM_MS + 1);
+    for (let i = 1; i < CAP; i++) await openSession(); // the rest of the cap, all fresh
+
+    // Pre-#147 this is the starvation: the map is full and this authenticated caller gets a 503.
+    const live = await rawInitialize(GOOD);
+    expect(live.status).toBe(200);
+    expect(live.headers.get("mcp-session-id")).toBeTruthy();
+    await live.body?.cancel().catch(() => {});
+
+    // …and the map stayed WITHIN its bound rather than growing to CAP+1: every slot is fresh again,
+    // so the next initialize is refused instead of admitted.
+    const over = await rawInitialize(GOOD);
+    expect(over.status).toBe(503);
+    expect(await over.json()).toEqual(TOO_MANY);
+  });
+
+  it("(2) below the cap nothing is reclaimed, however long a session has been idle", async () => {
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const standing = await openSession();
+      // Days idle — the #99 finding: a real client legitimately holds one session open this long.
+      clock.advance(SESSION_IDLE_RECLAIM_MS * 100);
+      const second = await openSession(); // 2 of CAP=3: still under the cap
+      expect(second).not.toBe(standing);
+
+      // The long-idle session is untouched: it still routes…
+      const still = await callOnSession(standing);
+      expect(still.status).toBe(200);
+      await still.body?.cancel().catch(() => {});
+      // …and no capacity event happened at all — there is no background sweep to fire one.
+      expect(capacityLines(spy)).toHaveLength(0);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("(3) the reclaimed session is the least recently used — a more recent one is left in place", async () => {
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+
+    const oldest = await openSession();
+    clock.advance(60_000);
+    const middle = await openSession();
+    clock.advance(60_000);
+    const newest = await openSession();
+    // Push every one of them past the idle floor, so the CHOICE is purely recency: a mechanism that
+    // picks any of the three would free a slot, and only ordering separates right from wrong.
+    clock.advance(SESSION_IDLE_RECLAIM_MS);
+
+    const live = await rawInitialize(GOOD);
+    expect(live.status).toBe(200);
+    await live.body?.cancel().catch(() => {});
+
+    // The least recently used is the one that went…
+    const gone = await callOnSession(oldest);
+    expect(gone.status).toBe(400);
+    await gone.body?.cancel().catch(() => {});
+    // …and both sessions that served more recently than it are still routable.
+    for (const sid of [middle, newest]) {
+      const r = await callOnSession(sid);
+      expect(r.status).toBe(200);
+      await r.body?.cancel().catch(() => {});
+    }
+  });
+
+  it("(3b) recency is SERVICE time, not creation time — an old session that just served survives", async () => {
+    // Cell (3) alone cannot see the difference: it opens three sessions and serves on none of them,
+    // so creation order and service order coincide and a FIFO-by-creation victim picker — or one
+    // that never stamps the routing branch at all — passes it. Here the OLDEST-CREATED session is
+    // the one still in use, which splits the two orders apart.
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+
+    const oldest = await openSession();
+    clock.advance(10 * 60_000);
+    const silent = await openSession(); // created SECOND, and never heard from again
+    clock.advance(10 * 60_000);
+    const youngest = await openSession();
+
+    // Three hours on, the first-created session is the live one.
+    clock.advance(3 * 60 * 60_000);
+    const served = await callOnSession(oldest);
+    expect(served.status).toBe(200);
+    await served.body?.cancel().catch(() => {});
+    clock.advance(1_000);
+
+    const live = await rawInitialize(GOOD);
+    expect(live.status).toBe(200);
+    await live.body?.cancel().catch(() => {});
+
+    // FIFO-by-creation would have taken `oldest`. Least-recently-SERVED takes `silent`.
+    const survivor = await callOnSession(oldest);
+    expect(survivor.status).toBe(200);
+    await survivor.body?.cancel().catch(() => {});
+    const victim = await callOnSession(silent);
+    expect(victim.status).toBe(400);
+    await victim.body?.cancel().catch(() => {});
+    // …and exactly ONE slot was freed: the youngest, equally silent, is untouched.
+    const untouched = await callOnSession(youngest);
+    expect(untouched.status).toBe(200);
+    await untouched.body?.cancel().catch(() => {});
+  });
+
+  it("(4) genuine saturation still refuses with the same status and JSON-RPC envelope", async () => {
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+
+    const first = await openSession();
+    for (let i = 1; i < CAP; i++) await openSession();
+    // No clock advance: every session served a request just now, so nothing is abandoned.
+
+    const over = await rawInitialize(GOOD);
+    expect(over.status).toBe(503);
+    expect(await over.json()).toEqual(TOO_MANY);
+
+    // …and the refusal cost nobody their session.
+    const still = await callOnSession(first);
+    expect(still.status).toBe(200);
+    await still.body?.cancel().catch(() => {});
+  });
+
+  it("(5) both capacity events log a greppable line with the count, and never the bearer", async () => {
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const victimId = await openSession();
+      clock.advance(SESSION_IDLE_RECLAIM_MS + 60_000);
+      for (let i = 1; i < CAP; i++) await openSession();
+
+      const live = await rawInitialize(GOOD);
+      expect(live.status).toBe(200);
+      await live.body?.cancel().catch(() => {});
+      let lines = capacityLines(spy);
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain("mcp_session_capacity reclaim");
+      expect(lines[0]).toContain(`(sessions ${CAP}/${CAP})`);
+
+      // Everything is fresh now, so the next one is a genuine refusal — and that says so too. This
+      // is the trace the 2026-08-08 incident had none of.
+      const over = await rawInitialize(GOOD);
+      expect(over.status).toBe(503);
+      await over.body?.cancel().catch(() => {});
+      lines = capacityLines(spy);
+      expect(lines).toHaveLength(2);
+      expect(lines[1]).toContain("mcp_session_capacity refuse");
+      expect(lines[1]).toContain(`(sessions ${CAP}/${CAP})`);
+
+      // The grammar is closed end to end, so nothing can be smuggled onto either line: not the
+      // bearer, and not the reclaimed session id — which routes straight to a bound ctx and is
+      // therefore a credential in its own right.
+      for (const line of lines) {
+        expect(line).toMatch(CAPACITY_LINE);
+        expect(line).not.toContain(GOOD);
+        expect(line).not.toContain(victimId);
+      }
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("(6) a reclaimed session is gone from BOTH stores and its client gets the unknown-session reply", async () => {
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+
+    const abandoned = await openSession();
+    clock.advance(SESSION_IDLE_RECLAIM_MS + 1);
+    for (let i = 1; i < CAP; i++) await openSession();
+    const live = await rawInitialize(GOOD);
+    expect(live.status).toBe(200);
+    await live.body?.cancel().catch(() => {});
+
+    // Transport store: the reclaimed id gets EXACTLY what an id this edge never knew gets — the
+    // response every MCP SDK client answers by re-initializing.
+    const reclaimed = await callOnSession(abandoned);
+    const stranger = await callOnSession("00000000-0000-4000-8000-000000000000");
+    expect(reclaimed.status).toBe(400);
+    expect(stranger.status).toBe(400);
+    expect(await reclaimed.json()).toEqual(await stranger.json());
+
+    // Ctx store: the operator sweep finds CAP live sessions, not CAP+1 — no half-dead cached ctx
+    // outlived the removal.
+    expect(endAgentSessions(FINANCE_CTX.userId, FINANCE_CTX.agentId)).toBe(CAP);
+  });
+
+  it("(6b) the reclaim clears BOTH stores ITSELF — not by leaning on the transport's onclose", async () => {
+    // Cell (6) cannot tell the two apart: `transport.close()` fires onclose, which drops the ctx and
+    // the map entry all over again, so deleting either line from the reclaim still passes. Neuter
+    // that one masking path — a close() that rejects never runs onclose — and what remains standing
+    // is only what the reclaim itself did.
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+
+    const abandoned = await openSession();
+    clock.advance(SESSION_IDLE_RECLAIM_MS + 1);
+    for (let i = 1; i < CAP; i++) await openSession();
+
+    const close = vi
+      .spyOn(StreamableHTTPServerTransport.prototype, "close")
+      .mockRejectedValue(new Error("close failed"));
+    try {
+      const live = await rawInitialize(GOOD);
+      expect(live.status).toBe(200);
+      await live.body?.cancel().catch(() => {});
+
+      // Transport store: the victim's id no longer routes anywhere.
+      const gone = await callOnSession(abandoned);
+      expect(gone.status).toBe(400);
+      await gone.body?.cancel().catch(() => {});
+
+      // Ctx store: the sweep sees the CAP live sessions, not CAP+1 — the victim's cached ctx went
+      // with it, even though nothing downstream of the reclaim ever ran.
+      expect(endAgentSessions(FINANCE_CTX.userId, FINANCE_CTX.agentId)).toBe(CAP);
+    } finally {
+      close.mockRestore();
+    }
+  });
+
+  it("(6c) the reclaim tears the victim's transport down — a standing stream does not outlive it", async () => {
+    // The half-dead entry criterion 6 names, in its worst form: a session gone from both maps whose
+    // response is still hanging off a live socket. Nothing above would notice — the maps are clean,
+    // the id 400s — so without this cell a reclaim that simply forgets to close() ships green.
+    resolveBearerMock.mockResolvedValue(FINANCE_CTX);
+    const clock = fakeClock();
+    await restartWithClock({ now: clock.now, maxSessions: CAP });
+
+    const abandoned = await openSession();
+    const stream = await fetch(`http://127.0.0.1:${edge.port}/mcp`, {
+      method: "GET",
+      headers: {
+        accept: "text/event-stream",
+        "mcp-session-id": abandoned,
+        authorization: `Bearer ${GOOD}`,
+      },
+    });
+    expect(stream.status).toBe(200);
+    const reader = stream.body!.getReader();
+    // Resolves the moment the stream ends. A mid-read reset is termination too, so it counts.
+    const terminated = (async () => {
+      for (;;) {
+        const { done } = await reader.read();
+        if (done) return true;
+      }
+    })().catch(() => true);
+
+    clock.advance(SESSION_IDLE_RECLAIM_MS + 1);
+    for (let i = 1; i < CAP; i++) await openSession();
+
+    const live = await rawInitialize(GOOD);
+    expect(live.status).toBe(200);
+    await live.body?.cancel().catch(() => {});
+
+    // The threshold this cell must cross is the stream actually ENDING. If the reclaim leaves the
+    // transport alive the stream just sits there and the timer wins — which is the failure.
+    try {
+      const ended = await Promise.race([
+        terminated,
+        new Promise<boolean>((r) => setTimeout(() => r(false), 3_000)),
+      ]);
+      expect(ended).toBe(true);
+    } finally {
+      // Release the client end whatever happened. A leaked transport is gone from the map, so
+      // edge.close() can no longer reach it, and the open socket would stall teardown for 10s and
+      // bury this cell's own assertion under an afterEach hook timeout.
+      await reader.cancel().catch(() => {});
+    }
+  });
 });
 
 // ── mcp-auth-bridge: the bridge-ON shapes (metadata routes, the 401 challenge, the throttled

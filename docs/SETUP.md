@@ -2,7 +2,7 @@
 
 The whole path, from nothing to an agent reading your life. Budget ten minutes for the gateway itself; each source you connect adds a few more, and the ones that need you to register an app with a provider are the slow part.
 
-If you are an agent doing this on someone's behalf, read [`../AGENTS.md`](../AGENTS.md) instead — it is this same path expressed as a contract, with every step marked human-required or automatable.
+If you are an agent doing this on someone's behalf, read [`../setup-with-your-agent.md`](../setup-with-your-agent.md) instead — it is this same path expressed as a contract, with every step marked human or automatable, verified end to end on a clean machine.
 
 ## 1. Run it
 

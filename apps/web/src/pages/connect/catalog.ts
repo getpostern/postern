@@ -507,15 +507,17 @@ export function providerBySlug(slug: string | undefined): ProviderDef | undefine
  * of those installs reads the same public site. Deriving this from anything local would give each
  * install a different (mostly broken) answer to a question that has one.
  */
-const GUIDES_ORIGIN = "https://getpostern.com/guides";
+const GUIDES_ORIGIN = "https://docs.getpostern.com";
 
 /**
- * The field guide for a source — `https://getpostern.com/guides/<slug>`.
+ * The field guide for a source — `https://docs.getpostern.com/connect/<slug>` (#149: the guides
+ * moved from the landing site to the docs site, 2026-08-08).
  *
- * The catalog `slug` IS the guide slug. The site publishes `/guides/<slug>` for google · gmail ·
- * microsoft · icloud · plaid · simplefin · whoop · home-assistant · apple-health (plus
- * remote-access, which is not a connectable source), so the mapping is the identity and there is no
- * second table to drift.
+ * The catalog `slug` IS the guide slug. The docs site publishes `/connect/<slug>` for google ·
+ * microsoft · icloud · plaid · simplefin · whoop · home-assistant · apple-health (`gmail` is a
+ * docs-side redirect to the google guide, mirroring the landing site's alias; `remote-access`
+ * lives under `/start/`, not `/connect/` — see REMOTE_ACCESS_GUIDE_URL below), so the mapping is
+ * the identity and there is no second table to drift.
  *
  * ONE derivation, deliberately: nine hand-typed URLs is how one renamed page 404s from a shipped
  * Console — silently, because nothing in this repo can see the site's routes — and how the tenth
@@ -541,8 +543,12 @@ export function guideUrl(def: ProviderDef): string {
  * `guideUrl` now routes through it, so the two can never disagree about the origin or the encoding.
  */
 export function guideUrlForSlug(slug: string): string {
-  return `${GUIDES_ORIGIN}/${encodeURIComponent(slug)}`;
+  return `${GUIDES_ORIGIN}/connect/${encodeURIComponent(slug)}`;
 }
 
-/** The remote-access field guide's slug, named where the site's slugs are already known. */
-export const REMOTE_ACCESS_GUIDE_SLUG = "remote-access";
+/**
+ * The remote-access field guide — published under `/start/`, not `/connect/`: it is setup
+ * documentation, not a connectable source. Derived from the same `GUIDES_ORIGIN` so this and
+ * `guideUrlForSlug` can never disagree about where the docs live.
+ */
+export const REMOTE_ACCESS_GUIDE_URL = `${GUIDES_ORIGIN}/start/remote-access`;

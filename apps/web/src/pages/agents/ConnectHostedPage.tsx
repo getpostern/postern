@@ -56,7 +56,7 @@ import { PUBLIC_ADDRESS_ROW_TITLE } from "../records/settings";
 // catalog entry, so it goes through the general form of the same one derivation — a second origin
 // written in this group is invisible on the day the site renames a page, which is the whole defect
 // #136 removed.
-import { REMOTE_ACCESS_GUIDE_SLUG, guideUrlForSlug } from "../connect/catalog";
+import { REMOTE_ACCESS_GUIDE_URL } from "../connect/catalog";
 
 // Step 3 carries the KEEP-THE-KEY sentence, and it is placed there on purpose. The reveal screen's
 // Copy puts the agent key on the clipboard; this page's Copy then replaces it with the URL. The
@@ -80,11 +80,11 @@ const STEPS: ReactNode[] = [
           handed `window.opener` and a Referer otherwise. The URL carries no parameters, ever. */}
       <a
         className={styles.stepLink}
-        href={guideUrlForSlug(REMOTE_ACCESS_GUIDE_SLUG)}
+        href={REMOTE_ACCESS_GUIDE_URL}
         target="_blank"
         rel="noopener noreferrer"
       >
-        The full remote-access field guide, at getpostern.com →
+        The full remote-access field guide, at docs.getpostern.com →
       </a>
     </span>
   </>,

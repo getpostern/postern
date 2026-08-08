@@ -36,9 +36,12 @@ const routes = [
 ];
 
 /**
- * The slugs the public site publishes under `/guides/` — the landing repo's site-build prompt §4
- * (committed 2026-07-31), which is what FIXES this contract. `remote-access` is a guide but not a
- * connectable source, so it is on the site and not in the catalog.
+ * The guide slugs the DOCS site (docs.getpostern.com) publishes for connectable sources under
+ * `/connect/` — fixed by the docs site's sitemap, 2026-08-08 (#149; the guides moved off the
+ * landing site). `gmail` is a docs-side redirect to the google guide, mirroring the landing
+ * site's alias. `remote-access` is a guide but not a connectable source; it is published under
+ * `/start/`, not `/connect/` (see REMOTE_ACCESS_GUIDE_URL). The docs also publish
+ * `/connect/chatgpt`, which no catalog entry links — outside this contract.
  *
  * Written out by hand on purpose: importing the catalog's own slugs to build the expectation would
  * make a renamed slug agree with itself and prove nothing.
@@ -59,7 +62,7 @@ const PUBLISHED_GUIDE_SLUGS = [
 /** The URL each connect screen must carry — spelled out here, never via `guideUrl`, so a broken
  *  derivation cannot satisfy this file by agreeing with itself. */
 function expectedGuideUrl(slug: string): string {
-  return `https://getpostern.com/guides/${slug}`;
+  return `https://docs.getpostern.com/connect/${slug}`;
 }
 
 /** Every anchor on the rendered screen, split by where it goes. In-app navigation is `<Link>` and
@@ -151,8 +154,8 @@ describe("every connect screen links its own field guide", () => {
       const { container } = renderAt(`/connect/${p.slug}`, routes);
       const url = new URL(guideAnchor(container, p.slug).href);
       expect(url.protocol, `/connect/${p.slug}`).toBe("https:");
-      expect(url.host, `/connect/${p.slug}`).toBe("getpostern.com");
-      expect(url.pathname, `/connect/${p.slug}`).toBe(`/guides/${p.slug}`);
+      expect(url.host, `/connect/${p.slug}`).toBe("docs.getpostern.com");
+      expect(url.pathname, `/connect/${p.slug}`).toBe(`/connect/${p.slug}`);
       // Nothing about this gate travels to the public site — not the host, not a connection id, not
       // which step failed.
       expect(url.search, `/connect/${p.slug}`).toBe("");
@@ -169,7 +172,7 @@ describe("every connect screen links its own field guide", () => {
     expect(link.textContent).toMatch(/full/i);
     expect(link.textContent).toContain("Whoop");
     expect(link.textContent).toMatch(/guide/i);
-    expect(link.textContent).toContain("getpostern.com");
+    expect(link.textContent).toContain("docs.getpostern.com");
   });
 });
 
@@ -211,7 +214,7 @@ describe("the URL is DERIVED from the slug, in one place", () => {
       expect(screen.getByText("Do the thing")).toBeTruthy();
       const link = guideAnchor(container, synthetic.slug);
       expect(link.getAttribute("href")).toBe(
-        "https://getpostern.com/guides/a-source-no-one-hardcoded",
+        "https://docs.getpostern.com/connect/a-source-no-one-hardcoded",
       );
     } finally {
       PROVIDERS.splice(PROVIDERS.indexOf(synthetic), 1);
@@ -232,11 +235,13 @@ describe("the URL is DERIVED from the slug, in one place", () => {
     expect(Object.keys(shipped).sort()).toEqual(
       ["AddASource.tsx", "ConnectProvider.tsx", "catalog.ts", "connectApi.ts", "index.ts", "ingestPayload.ts", "parts.tsx"].sort(),
     );
-    expect(shipped["catalog.ts"]).toContain("getpostern.com/guides");
+    // The URL prefix, not the bare host: "at docs.getpostern.com →" is a link's own TEXT; only a
+    // written-out URL literal is a second source of truth.
+    expect(shipped["catalog.ts"]).toContain("https://docs.getpostern.com");
 
     for (const [name, text] of Object.entries(shipped)) {
       if (name === "catalog.ts") continue;
-      expect(text, `${name} writes its own guide URL`).not.toContain("getpostern.com/guides");
+      expect(text, `${name} writes its own guide URL`).not.toContain("https://docs.getpostern.com");
     }
   });
 
@@ -245,7 +250,7 @@ describe("the URL is DERIVED from the slug, in one place", () => {
     // guide URL in source. Nothing about a person's gate belongs on the public site.
     for (const [name, text] of Object.entries(groupSource())) {
       expect(text, `${name} appends something to a guide URL`).not.toMatch(
-        /getpostern\.com\/guides[^\s"'`]*[?#]/,
+        /docs\.getpostern\.com[^\s"'`]*[?#]/,
       );
     }
   });

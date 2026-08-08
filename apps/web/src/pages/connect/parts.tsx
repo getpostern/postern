@@ -85,7 +85,7 @@ export function StepsColumn({
           noreferrer` because a `_blank` tab is handed `window.opener` and a Referer otherwise; the
           URL itself carries no parameters (guideUrl). */}
       <a className={styles.guideLink} href={guideUrl(def)} target="_blank" rel="noopener noreferrer">
-        The full {def.name} field guide, at getpostern.com →
+        The full {def.name} field guide, at docs.getpostern.com →
       </a>
       <p className={styles.footnote}>{def.footnote}</p>
     </div>

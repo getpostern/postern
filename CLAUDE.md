@@ -4,7 +4,7 @@ Neutral gateway for **Postern** (the Personal Context Gateway): connect the sect
 
 **Build for the world, not one box.** Every decision is for *all* the people who will run this. A real deployment with real accounts exists to **verify** a design against real data, never to **decide** one. When "right for this box" and "right for everyone" diverge, the holistic answer wins.
 
-*This file is for an agent working on the code. If you are setting a gateway up for someone, read [`AGENTS.md`](AGENTS.md). If you are sending a patch, read [`CONTRIBUTING.md`](CONTRIBUTING.md).*
+*This file is for an agent working on the code. If you are setting a gateway up for someone, read [`setup-with-your-agent.md`](setup-with-your-agent.md). If you are sending a patch, read [`CONTRIBUTING.md`](CONTRIBUTING.md).*
 
 ## Gotchas
 

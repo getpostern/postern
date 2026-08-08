@@ -418,7 +418,7 @@ describe("step 1 POINTS at remote access — the switch and the guide", () => {
 
   /** Spelled out, never via `guideUrlForSlug` — a derivation that broke could otherwise satisfy this
    *  file by agreeing with itself, which is the defect class this repo is named for. */
-  const REMOTE_ACCESS_GUIDE = "https://getpostern.com/guides/remote-access";
+  const REMOTE_ACCESS_GUIDE = "https://docs.getpostern.com/start/remote-access";
 
   /** MUTATION: drop the <Link> and leave step 1 naming the path in prose → RED. Naming a screen is
    *  not pointing at it; a person mid-connect had to go hunt for the switch. */
@@ -438,7 +438,7 @@ describe("step 1 POINTS at remote access — the switch and the guide", () => {
     expect(external.map((a) => a.getAttribute("href"))).toEqual([REMOTE_ACCESS_GUIDE]);
     expect(external[0].textContent).toMatch(/full/i);
     expect(external[0].textContent).toMatch(/guide/i);
-    expect(external[0].textContent).toContain("getpostern.com");
+    expect(external[0].textContent).toContain("docs.getpostern.com");
   });
 
   /** MUTATION: drop `rel` (or either half of it) → RED. A `_blank` tab is handed `window.opener` and
@@ -454,8 +454,8 @@ describe("step 1 POINTS at remote access — the switch and the guide", () => {
 
     const url = new URL(link.href);
     expect(url.protocol).toBe("https:");
-    expect(url.host).toBe("getpostern.com");
-    expect(url.pathname).toBe("/guides/remote-access");
+    expect(url.host).toBe("docs.getpostern.com");
+    expect(url.pathname).toBe("/start/remote-access");
     // Nothing about this gate travels to the public site — not its address, not which step failed.
     expect(url.search).toBe("");
     expect(url.hash).toBe("");
@@ -467,7 +467,7 @@ describe("step 1 POINTS at remote access — the switch and the guide", () => {
    * in `pages/agents` would be exactly as invisible on a site rename as the nine that scan exists to
    * prevent. This is that scan, for this group.
    *
-   * MUTATION: inline `"https://getpostern.com/guides/remote-access"` in ConnectHostedPage.tsx → RED.
+   * MUTATION: inline `"https://docs.getpostern.com/start/remote-access"` in ConnectHostedPage.tsx → RED.
    */
   it("no shipped file in the agents group writes a guide URL — it is derived", () => {
     const shipped = groupSource();
@@ -475,10 +475,10 @@ describe("step 1 POINTS at remote access — the switch and the guide", () => {
     expect(Object.keys(shipped)).toContain("ConnectHostedPage.tsx");
     expect(Object.keys(shipped).length).toBeGreaterThan(5);
 
-    // The URL prefix, not the bare host: "at getpostern.com →" is the link's own TEXT (the #136
+    // The URL prefix, not the bare host: "at docs.getpostern.com →" is the link's own TEXT (the #136
     // convention — a link says out loud that it leaves), and banning the host would ban that too.
     for (const [name, text] of Object.entries(shipped)) {
-      expect(text, `${name} writes its own guide URL`).not.toContain("getpostern.com/guides");
+      expect(text, `${name} writes its own guide URL`).not.toContain("https://docs.getpostern.com");
     }
   });
 });

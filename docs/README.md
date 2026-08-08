@@ -7,7 +7,7 @@ The map of this directory — which file answers which question.
 ## Getting it running
 
 - [`SETUP.md`](SETUP.md) — **the one to read first.** Compose up, the Console, every provider split by how much work it costs you, the redirect-URI trap, connecting an agent, and what to do when something is wrong.
-- [`../AGENTS.md`](../AGENTS.md) — the same path written as a contract for an agent doing the setup: the ordered step list with human-required and automatable marked, the loopback route table with body shapes, and the traps.
+- [`../setup-with-your-agent.md`](../setup-with-your-agent.md) — the same path written as a contract for an agent doing the setup: the phases in order, every human stop marked, the exact routes with body shapes, and the traps — verified end to end by a first-time user's agent on a clean machine.
 - [`runbooks/plaid-onboarding.md`](runbooks/plaid-onboarding.md) — connecting banks through Plaid, end to end, including what it costs.
 - [`runbooks/remote-access.md`](runbooks/remote-access.md) — reaching your gateway from away. Tailnet-private by default; the public `:443` endpoint that hosted clients require, opt-in and hardened. Read it in full before you publish anything.
 

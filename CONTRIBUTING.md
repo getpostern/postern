@@ -76,7 +76,7 @@ Some of these will look like obvious improvements. They were considered; the rea
 2. Branch, and keep the change to one concern.
 3. Green means `npm run typecheck`, `npm test`, `npm run lint`, and `npm run test:db` if you touched anything database-backed. Say in the PR which of those you ran.
 4. Explain **why**, not just what. If a review is going to ask "why not the simpler thing?", answer it in the description.
-5. If your change makes a statement in `CLAUDE.md`, an ADR, `docs/SETUP.md` or `AGENTS.md` false, fix it in the same PR. A document that is ahead of or behind the code is a defect, not a chore.
+5. If your change makes a statement in `CLAUDE.md`, an ADR, `docs/SETUP.md` or `setup-with-your-agent.md` false, fix it in the same PR. A document that is ahead of or behind the code is a defect, not a chore.
 
 ### Developer Certificate of Origin
 
